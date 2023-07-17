@@ -1,0 +1,65 @@
+{% load otree static %}
+
+<script>
+    window.interpreter_title = {{ session.vars.interpreter_title | json }}
+    window.interpreter_choices = {{ session.vars.interpreter_choices | json }}
+</script>
+<div id="app">
+    {% verbatim %}
+    <form @submit.prevent="checkChoices">
+        <input type="hidden" name="interpreter_decision" :value="JSON.stringify(sweets)">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">{{interpreter_title}}</th>
+                    <th scope="col">Yes</th>
+                    <th scope="col">No</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(sweet, index) in sweets" :key="index">
+                    <td>{{ sweet.name }}</td>
+                    <td><input   type="radio" v-model="sweet.choice" :value="true" @change="resetError"></td>
+                    <td><input   type="radio" v-model="sweet.choice" :value="false" @change="resetError"></td>
+
+                </tr>
+            </tbody>
+        </table>
+
+        <button :disabled="!allChoicesMade" type="button" @click="checkChoices" class="btn btn-primary">Next</button>
+
+
+        <p v-if="error" class="alert alert-danger my-3">Error: please, check your answers!</p>
+    </form>
+    {% endverbatim %}
+</div>
+<script src="https://unpkg.com/vue@next"></script>
+<script>
+    const app = Vue.createApp({
+        data() {
+            const sweets = window.interpreter_choices.map((name, index) => ({ name: name, choice: null }));
+            console.debug('SSWEETNS', sweets)
+            return {
+                interpreter_title: window.interpreter_title,
+                sweets: sweets,
+                error: false,
+            }
+        },
+        methods: {
+            resetError() {
+                this.error = false;
+            },
+            checkChoices() {
+
+                $('#form').submit()
+
+            },
+        },
+        computed: {
+            allChoicesMade() {
+                return this.sweets.every(sweet => sweet.choice !== null);
+            }
+        }
+    })
+    app.mount('#app')
+</script>

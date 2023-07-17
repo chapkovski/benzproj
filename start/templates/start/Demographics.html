@@ -1,0 +1,28 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+Page title
+{% endblock %}
+
+{% block content %}
+
+<h2 style="text-align:right">
+    <table style="width:800px">
+        <tr>
+            <td></td>
+            <td></td>
+            <td><img src="{% static 'global/img/zas.png' %}" width="110" alt="ZAS"></td>
+        </tr>
+    </table>
+</h2>
+
+ <b> We ask you to provide us with the following information, which will be treated confidentially and stored
+        anonymously: </b> <br> <br>
+
+{%formfields%}
+
+ 
+{% next_button %}
+
+{% endblock %}

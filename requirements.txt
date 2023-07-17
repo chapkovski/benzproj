@@ -1,0 +1,8 @@
+# otree==3.4.0
+psycopg2==2.8.6
+pandas
+django_countries==7.0
+requests 
+gspread==5.9.0
+git+https://github.com/chapkovski/otree_new.git#egg=otree 
+python-dotenv
