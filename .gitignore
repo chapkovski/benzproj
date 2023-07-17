@@ -13,3 +13,4 @@ __pycache__/
 *.otreezip
 benzfront/
 .env
+.google_secret_key

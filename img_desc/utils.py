@@ -19,9 +19,6 @@ def get_url_for_image(player, img, extension=None):
     s3path = player.session.vars.get("s3path")
     extension = extension or player.session.vars.get("extension")
     full_path = f"{s3path}{img}.{extension}"
-    print('FULL PATH',s3path)
-    print('FULL PATH',extension)
-    print('FULL PATH',img)
     return full_path
 
 
@@ -57,7 +54,7 @@ def increase_space(study_id, num_extra, max_users):
             f"QUOTA EXCEEDED. Num of current places: {num_current_places}. Max users: {max_users}"
         )
         return
-    # print(int(num_current_places))
+ 
     url = f"https://api.prolific.co/api/v1/studies/{study_id}/"
     payload = json.dumps({"total_available_places": num_current_places + num_extra})
     logger.info(
@@ -69,6 +66,5 @@ def increase_space(study_id, num_extra, max_users):
 
 
 if __name__ == "__main__":
-    # pprint(get_balance())
-    # pprint(get_study('61c1a16c9e1ee089d32f675b'))
+ 
     pprint(increase_space("61c1a16c9e1ee089d32f675b", 1, 15))

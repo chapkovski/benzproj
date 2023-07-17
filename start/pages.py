@@ -103,7 +103,7 @@ page_sequence = [
     # Consent,
     # Demographics,
     # Instructions,
-    # Practice1,
+    Practice1,
     # Practice2,
     # Practice3,
     # Practice4,

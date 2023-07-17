@@ -23,13 +23,7 @@ data_types = {
     "overwrite": int,
 }
 
-# gc = gspread.service_account_from_dict(google_creds)
-# gc = gspread.service_account(filename="reading_xls/chapkovski-b30397f4548a.json")
 
-
-print('*'*100) 
-pprint(google_creds)
-print('*'*100) 
 gc = gspread.service_account_from_dict(google_creds)
 
 

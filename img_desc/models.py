@@ -111,7 +111,8 @@ class Subsession(BaseSubsession):
         self.active_batch = 0
         if self.round_number == 1:
             self.session.vars["active_batch"] = 0
-            excel_data = get_data("benz")
+            filename=self.session.config.get('filename')
+            excel_data = get_data(filename)
 
             self.session.vars["user_data"] = excel_data.get("data")
             self.session.vars["practice_settings"] = excel_data.get("practice_settings")
@@ -162,7 +163,7 @@ class Subsession(BaseSubsession):
             self.session.vars["max_users"] = max_users
             assert batch_size > 0, "Somemthing wrong with the batch size!"
             self.session.vars["batch_size"] = batch_size
-            pprint(self.session.vars)
+            
         df = self.session.vars["user_data"]
         df_filtered = df[df["round"] == self.round_number]
         data = df_filtered.to_dict(orient="records")
@@ -311,7 +312,6 @@ class Player(BasePlayer):
 
             if self.session.config.get("for_prolific"):
                 vars = self.participant.vars
-                print("VARS", vars)
                 prol_study_id = vars.get("study_id")
                 prol_session_id = vars.get("session_id")
                 # we want to set this study id, completion code and return code on subsession level only once
