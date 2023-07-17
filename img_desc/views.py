@@ -7,8 +7,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 import json
-from .models import Player, UserData
+from .models import Player, UserData, PRODUCER, INTERPRETER
 import logging
+from django.utils import timezone
+
 
 RETURNED_STATUSES = ["RETURNED", "TIMED-OUT"]
 STATUS_CHANGE = "submission.status.change"
@@ -48,12 +50,14 @@ class HookView(View):
                     )
                 if participants.exists():
                     msgs = []
-                    for p in participants:  
-                        i=UserData.objects.filter(owner=p).update(busy=False, owner=None)         
-                        if i>0:
+                    for p in participants:
+                        i = UserData.objects.filter(owner=p).update(
+                            busy=False, owner=None
+                        )
+                        if i > 0:
                             msg = f"Player {p.code} released the slot. Prolific participant {participant_id} returned the study"
                         else:
-                            msg=f'It seems that player {p.code} has no User Data attached (probably already released)'
+                            msg = f"It seems that player {p.code} has no User Data attached (probably already released)"
                         logger.info(msg)
                         msgs.append(msg)
 
@@ -70,3 +74,78 @@ class HookView(View):
         else:
             msg = "Thank you!"
             return JsonResponse(dict(message=msg))
+
+
+class PandasExport(View):
+    url_name = None
+
+    def get(self, request, *args, **kwargs):
+        params = dict(inner_role=PRODUCER)
+        df = self.get_data(params)
+        if df is not None and not df.empty:
+            timestamp = timezone.now()
+            curtime = timestamp.strftime("%m_%d_%Y_%H_%M_%S")
+            csv_data = df.to_csv(index=False)
+            response = HttpResponse(csv_data, content_type=self.content_type)
+            filename = f"{self.url_name}_{curtime}.csv"
+            response["Content-Disposition"] = f"attachment; filename={filename}"
+            return response
+        else:
+            return redirect(reverse("ExportIndex"))
+
+
+class ProducerExport(PandasExport):
+    display_name = "Producer export"
+    url_name = "producer_decisions"
+    url_pattern = rf"producers"
+    content_type = "text/csv"
+
+    def get_data(self, params):
+        events = Player.objects.filter(inner_role=PRODUCER).values(
+            "participant__code", 'round_number','session__code', "producer_decision", 'batch', 'inner_data',  
+        )
+        if not events.exists():
+            return
+        if events.exists():
+            df = pd.DataFrame(data=events)
+            df["producer_decision"] = df["producer_decision"].apply(
+                lambda x: json.loads(x) if x else []
+            )
+            df['image'] = df['inner_data'].apply(lambda x: json.loads(x).get('image') if x else None)
+
+            # Create new columns
+            for i, row in df.iterrows():
+                for inner_index, inner_list in enumerate(row["producer_decision"]):
+                    for j, item in enumerate(inner_list):
+                        df.at[i, f"SENTENCE_{inner_index+1}_{j+1}"] = item
+
+            # Drop the original column
+            df = df.drop(columns=["producer_decision",'inner_data'])
+            return df
+
+
+class InterperterExport(PandasExport):
+    display_name = "Interpreter export"
+    url_name = "interpreter_decisions"
+    url_pattern = rf"interpreters"
+    content_type = "text/csv"
+
+    def get_data(self, params):
+        main_dv = "interpreter_decision"
+        suffix = "REWARD"
+        events = Player.objects.filter(inner_role=INTERPRETER).values(
+            "participant__code", main_dv
+        )
+        if not events.exists():
+            return
+        if events.exists():
+            df = pd.DataFrame(data=events)
+            df[main_dv] = df[main_dv].apply(lambda x: json.loads(x) if x else [])
+            # Create new columns
+            for i, row in df.iterrows():
+                for inner_index, item in enumerate(row[main_dv]):
+                    df.at[i, f"{suffix}_{inner_index+1}"] = item
+
+            # Drop the original column
+            df = df.drop(columns=[main_dv])
+            return df

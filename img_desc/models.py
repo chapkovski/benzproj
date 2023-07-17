@@ -205,9 +205,6 @@ class Player(BasePlayer):
     batch = models.IntegerField()
     faulty = models.BooleanField(initial=False)
 
-    def unmark_busy(self):
-        UserData.objects.filter(owner=self.participant).update(busy=False, owner=None)
-
     def mark_data_processed(self):
         UserData.objects.filter(owner=self.participant).update(processed=True)
         self.subsession.check_for_batch_completion()
