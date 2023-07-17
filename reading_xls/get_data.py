@@ -23,7 +23,8 @@ data_types = {
     "overwrite": int,
 }
 
-
+pprint(google_creds)
+pprint('*'*100)
 gc = gspread.service_account_from_dict(google_creds)
 
 
