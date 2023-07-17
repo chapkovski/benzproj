@@ -17,8 +17,9 @@ from reading_xls.get_data import get_data
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .utils import get_study, STUBURL, get_completion_info
-import logging
+
 from .utils import get_url_for_image
+import logging
 
 logger = logging.getLogger("benzapp.models")
 
@@ -111,7 +112,7 @@ class Subsession(BaseSubsession):
         self.active_batch = 0
         if self.round_number == 1:
             self.session.vars["active_batch"] = 0
-            filename=self.session.config.get('filename')
+            filename = self.session.config.get("filename")
             excel_data = get_data(filename)
 
             self.session.vars["user_data"] = excel_data.get("data")
@@ -163,7 +164,7 @@ class Subsession(BaseSubsession):
             self.session.vars["max_users"] = max_users
             assert batch_size > 0, "Somemthing wrong with the batch size!"
             self.session.vars["batch_size"] = batch_size
-            
+
         df = self.session.vars["user_data"]
         df_filtered = df[df["round"] == self.round_number]
         data = df_filtered.to_dict(orient="records")
@@ -204,6 +205,9 @@ class Player(BasePlayer):
     inner_data = models.LongStringField()
     batch = models.IntegerField()
     faulty = models.BooleanField(initial=False)
+    current_data = djmodels.ForeignKey(
+        to=UserData, on_delete=djmodels.CASCADE, related_name="userdata", null=True
+    )
 
     def mark_data_processed(self):
         UserData.objects.filter(owner=self.participant).update(processed=True)
@@ -219,6 +223,9 @@ class Player(BasePlayer):
     full_return_url = models.StringField()
     producer_decision = models.LongStringField()
     interpreter_decision = models.LongStringField()
+    start_decision_time = djmodels.DateTimeField(null=True)
+    end_decision_time = djmodels.DateTimeField(null=True)
+    decision_seconds = models.FloatField()
 
     def get_sentences(self):
         prefix = self.session.vars.get("prefix", "")
@@ -273,6 +280,7 @@ class Player(BasePlayer):
                 if not to_whom.overwrite:
                     current_data = json.loads(self.link_to_data.data)
                     current_data["sentence_data"] = json.loads(self.producer_decision)
+                    current_data["from_whom"] = self.participant.code
                     to_whom.data = json.dumps(current_data)
                     to_whom.save()
 
@@ -376,4 +384,5 @@ class Player(BasePlayer):
             inner_role=self.link_to_data.role,
             inner_data=self.link_to_data.data,
         )
+        self.current_data = self.link_to_data
         Player.objects.filter(id=self.id).update(**link_update)

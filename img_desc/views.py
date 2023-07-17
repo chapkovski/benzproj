@@ -94,6 +94,21 @@ class PandasExport(View):
             return redirect(reverse("ExportIndex"))
 
 
+COMMON_FIELDS = [
+    "participant__code",
+    "inner_data",
+    "round_number",
+    "session__code",
+    "batch",
+    "start_decision_time",
+    "end_decision_time",
+    "decision_seconds",
+    "current_data__id_in_group",
+    "current_data__processed",
+    "current_data__overwrite",
+]
+
+
 class ProducerExport(PandasExport):
     display_name = "Producer export"
     url_name = "producer_decisions"
@@ -101,26 +116,30 @@ class ProducerExport(PandasExport):
     content_type = "text/csv"
 
     def get_data(self, params):
+        main_dv = "producer_decision"
+        suffix = "SENTENCE"
         events = Player.objects.filter(inner_role=PRODUCER).values(
-            "participant__code", 'round_number','session__code', "producer_decision", 'batch', 'inner_data',  
+            main_dv,
+            *COMMON_FIELDS,
+            "current_data__to_whom",
         )
         if not events.exists():
             return
         if events.exists():
             df = pd.DataFrame(data=events)
-            df["producer_decision"] = df["producer_decision"].apply(
-                lambda x: json.loads(x) if x else []
+            df[main_dv] = df[main_dv].apply(lambda x: json.loads(x) if x else [])
+            df["image"] = df["inner_data"].apply(
+                lambda x: json.loads(x).get("image") if x else None
             )
-            df['image'] = df['inner_data'].apply(lambda x: json.loads(x).get('image') if x else None)
 
             # Create new columns
             for i, row in df.iterrows():
-                for inner_index, inner_list in enumerate(row["producer_decision"]):
+                for inner_index, inner_list in enumerate(row[main_dv]):
                     for j, item in enumerate(inner_list):
-                        df.at[i, f"SENTENCE_{inner_index+1}_{j+1}"] = item
+                        df.at[i, f"{suffix}_{inner_index+1}_{j+1}"] = item
 
             # Drop the original column
-            df = df.drop(columns=["producer_decision",'inner_data'])
+            df = df.drop(columns=[main_dv, "inner_data"])
             return df
 
 
@@ -134,18 +153,28 @@ class InterperterExport(PandasExport):
         main_dv = "interpreter_decision"
         suffix = "REWARD"
         events = Player.objects.filter(inner_role=INTERPRETER).values(
-            "participant__code", main_dv
+            main_dv, *COMMON_FIELDS
         )
         if not events.exists():
             return
         if events.exists():
             df = pd.DataFrame(data=events)
             df[main_dv] = df[main_dv].apply(lambda x: json.loads(x) if x else [])
+            df["inner_data"] = df["inner_data"].apply(lambda x: json.loads(x))
+            df["from_whom"] = df.inner_data.apply(
+                lambda x: x.get("from_whom") if x else None
+            )
+            df["image"] = df.inner_data.apply(lambda x: x.get("image") if x else None)
+            df["sentence_data"] = df.inner_data.apply(
+                lambda x: x.get("sentence_data") if x else None
+            )
             # Create new columns
             for i, row in df.iterrows():
                 for inner_index, item in enumerate(row[main_dv]):
                     df.at[i, f"{suffix}_{inner_index+1}"] = item
-
+                for inner_index, inner_list in enumerate(row["sentence_data"]):
+                    for j, item in enumerate(inner_list):
+                        df.at[i, f"SENTENCE_{inner_index+1}_{j+1}"] = item
             # Drop the original column
-            df = df.drop(columns=[main_dv])
+            df = df.drop(columns=[main_dv, "inner_data", "sentence_data"])
             return df

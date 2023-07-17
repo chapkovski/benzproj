@@ -27,6 +27,9 @@
 <div id="app" class="text-center" v-cloak>
     {% verbatim %}
     <input type="hidden" name="producer_decision" :value="JSON.stringify(formattedItems)">
+    <input type="hidden" v-model="startTime" name="start_decision_time">
+    <input type="hidden" v-model="endTime" name="end_decision_time">
+    <input type="hidden" v-model="durationInSeconds" name="decision_seconds">
     <ul class="list-group list-group-flush my-3" v-cloak>
         <li class="list-group-item d-flex" v-for="(item, itemIndex) in items" :key="itemIndex"
             style="    flex-flow: nowrap">
@@ -72,6 +75,9 @@
             }));
 
             return {
+                startTime: new Date().toISOString(),  // ISO string format "2023-07-19T16:14:33.789Z"
+                endTime: null,
+                durationInSeconds: null,
                 maxItems: 5,
                 minItems: 1,
                 prefix: window.prefix,
@@ -109,13 +115,20 @@
 
                     this.validated = true;
                     this.error = false;
-                    $('#form').submit()
+                    this.endTime = new Date().toISOString();
+                    this.durationInSeconds = (new Date(this.endTime) - new Date(this.startTime)) / 1000;
+
+                    this.$nextTick(() => {
+                        // After the next DOM update cycle
+                        $('#form').submit()
+                    });
+
                 }
             },
             isValid() {
                 return this.items.every((item) => {
                     return item.fields.every((field) => {
-                        
+
                         return this.checkSingleField(field)
                     })
                 });

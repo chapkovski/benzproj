@@ -8,6 +8,9 @@
     {% verbatim %}
     <form @submit.prevent="checkChoices">
         <input type="hidden" name="interpreter_decision" :value="JSON.stringify(sweets)">
+        <input type="hidden" v-model="startTime" name="start_decision_time">
+        <input type="hidden" v-model="endTime" name="end_decision_time">
+        <input type="hidden" v-model="durationInSeconds" name="decision_seconds">
         <table class="table">
             <thead>
                 <tr>
@@ -19,8 +22,8 @@
             <tbody>
                 <tr v-for="(sweet, index) in sweets" :key="index">
                     <td>{{ sweet.name }}</td>
-                    <td><input   type="radio" v-model="sweet.choice" :value="true" @change="resetError"></td>
-                    <td><input   type="radio" v-model="sweet.choice" :value="false" @change="resetError"></td>
+                    <td><input type="radio" v-model="sweet.choice" :value="true" @change="resetError"></td>
+                    <td><input type="radio" v-model="sweet.choice" :value="false" @change="resetError"></td>
 
                 </tr>
             </tbody>
@@ -38,8 +41,11 @@
     const app = Vue.createApp({
         data() {
             const sweets = window.interpreter_choices.map((name, index) => ({ name: name, choice: null }));
-            console.debug('SSWEETNS', sweets)
+
             return {
+                startTime: new Date().toISOString(),  // ISO string format "2023-07-19T16:14:33.789Z"
+                endTime: null,
+                durationInSeconds: null,
                 interpreter_title: window.interpreter_title,
                 sweets: sweets,
                 error: false,
@@ -50,6 +56,13 @@
                 this.error = false;
             },
             checkChoices() {
+                this.endTime = new Date().toISOString();
+                this.durationInSeconds = (new Date(this.endTime) - new Date(this.startTime)) / 1000;
+
+                this.$nextTick(() => {
+                    // After the next DOM update cycle
+                    $('#form').submit()
+                });
 
                 $('#form').submit()
 

@@ -5,7 +5,8 @@ from .models import Constants, PRODUCER, INTERPRETER
 from django.shortcuts import redirect
 import json
 from pprint import pprint
-
+import logging
+logger = logging.getLogger("benzapp.pages")
 
 class FaultyCatcher(Page):
     def is_displayed(self):
@@ -24,6 +25,20 @@ class Q(Page):
         return self.round_number <= self.session.vars["num_rounds"]
 
     def post(self):
+ 
+        time_vars = ["start_decision_time", "end_decision_time",]
+        for t in time_vars:
+            v = self.request.POST.get(t)
+            if v:
+
+                setattr(self.player, t, v)
+        dec_sec=self.request.POST.get( "decision_seconds")
+        if dec_sec:
+            try:
+                self.player.decision_seconds=float(dec_sec)
+            except Exception as e:
+                print(e)
+                logger.error('Failed to set duration of decision page')
         if self.player.inner_role == PRODUCER:
             field_name = "producer_decision"
         else:
@@ -35,7 +50,7 @@ class Q(Page):
                 flatten_decisions = [list(i.values()) for i in decisions]
                 self.player.producer_decision = json.dumps(flatten_decisions)
             if self.player.inner_role == INTERPRETER:
-                flatten_decisions = [i.get('choice') for i in decisions]
+                flatten_decisions = [i.get("choice") for i in decisions]
                 self.player.interpreter_decision = json.dumps(flatten_decisions)
 
         return super().post()
@@ -43,7 +58,7 @@ class Q(Page):
     def before_next_page(self):
         if self.player.inner_role == PRODUCER:
             self.player.update_next_batch()
-        if self.round_number == self.session.vars['num_rounds']:
+        if self.round_number == self.session.vars["num_rounds"]:
             self.player.mark_data_processed()
 
         return super().before_next_page()
