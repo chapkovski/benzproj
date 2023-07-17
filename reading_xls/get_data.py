@@ -8,6 +8,7 @@ from collections import defaultdict
 import re
 import os
 import base64
+from pprint import pprint
 from _secrets import data as google_creds
 
 SETTINGS_WS = "settings"
@@ -26,7 +27,9 @@ data_types = {
 # gc = gspread.service_account(filename="reading_xls/chapkovski-b30397f4548a.json")
 
 
- 
+print('*'*100) 
+pprint(google_creds)
+print('*'*100) 
 gc = gspread.service_account_from_dict(google_creds)
 
 
