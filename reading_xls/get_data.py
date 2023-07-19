@@ -1,15 +1,28 @@
 import gspread
 import pandas as pd
 import json
-from pprint import pprint
 import gspread
-import numpy as np
-from collections import defaultdict
 import re
 import os
-import base64
 from pprint import pprint
-from _secrets import data as google_creds
+import logging
+
+logger = logging.getLogger("benzapp.get_data")
+try:
+    from .convert import convert
+    from _secrets import data as google_creds
+except (ModuleNotFoundError, ImportError):
+    logger.warning('we run from main for debugging apparently')
+    from convert import convert
+    from dotenv import load_dotenv
+    load_dotenv() 
+    with open("../_secrets/google_creds.json", "r") as f:
+        data = json.load(f)
+    data["private_key_id"]=os.getenv('GOOGLE_PRIVATE_KEY_ID')
+    data["private_key"]=os.getenv('GOOGLE_PRIVATE_KEY')
+    data["client_email"]=os.getenv('GOOGLE_CLIENT_EMAIL')
+    data["client_id"]=os.getenv('GOOGLE_CLIENT_ID')
+    google_creds=data
 
 SETTINGS_WS = "settings"
 DATA_WS = "data"
@@ -100,6 +113,8 @@ def get_data(filename):
         raise Exception(
             f"Settings/Data spreadsheet should contain worksheets named {ALLOWED_WS_NAMES}"
         )
+    
+ 
     settings_raw = spreadsheet.worksheet(SETTINGS_WS).get_all_values()
     settings_df = pd.DataFrame(settings_raw)
     settings_dict = (
@@ -150,10 +165,21 @@ def get_data(filename):
         .fillna(value=0)
     )
     df.overwrite = df.overwrite.astype("int").astype("bool")
-    data = dict(data=df, settings=settings_dict, practice_settings=result_practice_dict)
+    data = dict(data=df, settings=settings_dict, practice_settings=result_practice_dict,
+                )
     return data
 
-
+def long_data(filename):
+    spreadsheet = gc.open(filename)
+    DATA_WS='alt_data'
+    raw = spreadsheet.worksheet(DATA_WS).get_all_records()
+    df = pd.DataFrame(raw)
+    conv_data=convert(df)
+    return conv_data
 if __name__ == "__main__":
-    df = get_data("benz")
-    pprint(df)
+    # df = get_data("benz").get('data')
+    # pprint(df.columns)
+    df=long_data('benz')
+    pprint(df.shape)
+    df.to_csv('./mocklong.csv', index=False)
+    
