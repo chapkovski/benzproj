@@ -12,17 +12,18 @@ try:
     from .convert import convert
     from _secrets import data as google_creds
 except (ModuleNotFoundError, ImportError):
-    logger.warning('we run from main for debugging apparently')
+    logger.warning("we run from main for debugging apparently")
     from convert import convert
     from dotenv import load_dotenv
-    load_dotenv() 
+
+    load_dotenv()
     with open("../_secrets/google_creds.json", "r") as f:
         data = json.load(f)
-    data["private_key_id"]=os.getenv('GOOGLE_PRIVATE_KEY_ID')
-    data["private_key"]=os.getenv('GOOGLE_PRIVATE_KEY')
-    data["client_email"]=os.getenv('GOOGLE_CLIENT_EMAIL')
-    data["client_id"]=os.getenv('GOOGLE_CLIENT_ID')
-    google_creds=data
+    data["private_key_id"] = os.getenv("GOOGLE_PRIVATE_KEY_ID")
+    data["private_key"] = os.getenv("GOOGLE_PRIVATE_KEY")
+    data["client_email"] = os.getenv("GOOGLE_CLIENT_EMAIL")
+    data["client_id"] = os.getenv("GOOGLE_CLIENT_ID")
+    google_creds = data
 
 SETTINGS_WS = "settings"
 DATA_WS = "data"
@@ -36,7 +37,7 @@ data_types = {
     "overwrite": int,
 }
 
- 
+
 gc = gspread.service_account_from_dict(google_creds)
 
 
@@ -113,8 +114,7 @@ def get_data(filename):
         raise Exception(
             f"Settings/Data spreadsheet should contain worksheets named {ALLOWED_WS_NAMES}"
         )
-    
- 
+
     settings_raw = spreadsheet.worksheet(SETTINGS_WS).get_all_values()
     settings_df = pd.DataFrame(settings_raw)
     settings_dict = (
@@ -137,49 +137,30 @@ def get_data(filename):
     settings_dict["interpreter_choices"] = allowed_value_converter(
         settings_dict["interpreter_choices"]
     )
-
-    sh = spreadsheet.worksheet(DATA_WS)
-
-    data = sh.get_all_records()
-    df = pd.DataFrame(data)
-    df = creating_sentences(df)
-
-    cols_to_keep = ["batch", "round", "id_in_group", "role", "to_whom", "overwrite"]
-
-    # Define other columns you want to convert to dictionary
-    cols_to_convert = [col for col in df.columns if col not in cols_to_keep]
-
-    # Convert selected columns to a dictionary and store it as a JSON string
-    df["data"] = df[cols_to_convert].apply(
-        lambda row: json.dumps(row.to_dict()), axis=1
+    DATA_WS = "alt_data"
+    raw = spreadsheet.worksheet(DATA_WS).get_all_records()
+    df = pd.DataFrame(raw)
+    conv_data = convert(df)
+    data = dict(
+        data=conv_data,
+        settings=settings_dict,
+        practice_settings=result_practice_dict,
     )
-
-    # Drop the converted columns from the DataFrame
-    df.drop(columns=cols_to_convert, inplace=True)
-
-    df = df.astype(data_types)
-    df.role = df.role.astype("string")
-    df.to_whom = (
-        pd.to_numeric(df["to_whom"], errors="coerce", downcast="integer")
-        .astype("Int64")
-        .fillna(value=0)
-    )
-    df.overwrite = df.overwrite.astype("int").astype("bool")
-    data = dict(data=df, settings=settings_dict, practice_settings=result_practice_dict,
-                )
     return data
+
 
 def long_data(filename):
     spreadsheet = gc.open(filename)
-    DATA_WS='alt_data'
+    DATA_WS = "alt_data"
     raw = spreadsheet.worksheet(DATA_WS).get_all_records()
     df = pd.DataFrame(raw)
-    conv_data=convert(df)
+    conv_data = convert(df)
     return conv_data
+
+
 if __name__ == "__main__":
     # df = get_data("benz").get('data')
     # pprint(df.columns)
-    df=long_data('benz')
+    df = long_data("benz")
     pprint(df.shape)
-    df.to_csv('./mocklong.csv', index=False)
-    
+    df.to_csv("./mocklong.csv", index=False)

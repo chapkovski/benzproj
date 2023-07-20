@@ -11,15 +11,9 @@ PROLIFIC_URL = environ.get("PROLIFIC_URL", "https://cnn.com")
 EXTENSION_APPS = ["img_desc"]
 
 SESSION_CONFIGS = [
+    
     dict(
-        expand_slots=True,
-        name="main",
-        display_name="main",
-        num_demo_participants=8,
-        app_sequence=["main"],
-    ),
-    dict(
-        expand_slots=True,
+        expand_slots=False,
         name="img_desc",
         display_name="img_desc",
         num_demo_participants=8,

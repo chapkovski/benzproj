@@ -2,7 +2,7 @@ from pprint import pprint
 import pandas as pd
 from sys import exit
 import json
-
+NA_LIST=['', 'NA']
 def convert(df):
  
     sentence_cols = df.filter(regex='^Sentence_').columns
@@ -25,7 +25,7 @@ def convert(df):
             inner_list = []
             for j in range(inner_list_len):
                 value = row[f'Sentence_{i+1}_{j+1}']
-                if value != '':
+                if value not in NA_LIST:
                     inner_list.append(value)
             if inner_list:  # Check if inner list is not empty
                 nested_sentences.append(inner_list)

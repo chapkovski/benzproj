@@ -6,7 +6,10 @@ from django.shortcuts import redirect
 import json
 from pprint import pprint
 import logging
+from django.forms.models import model_to_dict
+
 logger = logging.getLogger("benzapp.pages")
+
 
 class FaultyCatcher(Page):
     def is_displayed(self):
@@ -21,24 +24,28 @@ class FaultyCatcher(Page):
 class Q(Page):
     instructions = True
 
+    def vars_for_template(self):
+        return dict(d=model_to_dict(self.player.link))
+
     def is_displayed(self):
         return self.round_number <= self.session.vars["num_rounds"]
 
     def post(self):
- 
-        time_vars = ["start_decision_time", "end_decision_time",]
+        time_vars = [
+            "start_decision_time",
+            "end_decision_time",
+        ]
         for t in time_vars:
             v = self.request.POST.get(t)
             if v:
-
                 setattr(self.player, t, v)
-        dec_sec=self.request.POST.get( "decision_seconds")
+        dec_sec = self.request.POST.get("decision_seconds")
         if dec_sec:
             try:
-                self.player.decision_seconds=float(dec_sec)
+                self.player.decision_seconds = float(dec_sec)
             except Exception as e:
                 print(e)
-                logger.error('Failed to set duration of decision page')
+                logger.error("Failed to set duration of decision page")
         if self.player.inner_role == PRODUCER:
             field_name = "producer_decision"
         else:
@@ -52,16 +59,12 @@ class Q(Page):
             if self.player.inner_role == INTERPRETER:
                 flatten_decisions = [i.get("choice") for i in decisions]
                 self.player.interpreter_decision = json.dumps(flatten_decisions)
-
         return super().post()
 
     def before_next_page(self):
-        if self.player.inner_role == PRODUCER:
-            self.player.update_next_batch()
+        self.player.update_batch()
         if self.round_number == self.session.vars["num_rounds"]:
             self.player.mark_data_processed()
-
-        return super().before_next_page()
 
 
 class FinalForProlific(Page):

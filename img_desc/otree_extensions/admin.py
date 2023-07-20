@@ -1,3 +1,3 @@
-from ..views import ProducerExport,InterperterExport
+from ..views import DataExport
 
-data_export_views = [ProducerExport,InterperterExport]
+data_export_views = [DataExport]

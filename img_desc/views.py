@@ -7,10 +7,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 import json
-from .models import Player, UserData, PRODUCER, INTERPRETER
+from .models import Player, Batch, PRODUCER, INTERPRETER
 import logging
 from django.utils import timezone
-
+from pprint import pprint
 
 RETURNED_STATUSES = ["RETURNED", "TIMED-OUT"]
 STATUS_CHANGE = "submission.status.change"
@@ -51,9 +51,7 @@ class HookView(View):
                 if participants.exists():
                     msgs = []
                     for p in participants:
-                        i = UserData.objects.filter(owner=p).update(
-                            busy=False, owner=None
-                        )
+                        i = Batch.objects.filter(owner=p).update(busy=False, owner=None)
                         if i > 0:
                             msg = f"Player {p.code} released the slot. Prolific participant {participant_id} returned the study"
                         else:
@@ -96,85 +94,34 @@ class PandasExport(View):
 
 COMMON_FIELDS = [
     "participant__code",
-    "inner_data",
     "round_number",
     "session__code",
-    "batch",
     "start_decision_time",
     "end_decision_time",
     "decision_seconds",
-    "current_data__id_in_group",
-    "current_data__processed",
-    "current_data__overwrite",
+    "link__id_in_group",
+    "link__processed",
+    "link__partner_id",
+    "link__condition",
+    "link__image",
 ]
 
 
-class ProducerExport(PandasExport):
-    display_name = "Producer export"
-    url_name = "producer_decisions"
-    url_pattern = rf"producers"
+class DataExport(PandasExport):
+    display_name = "Data export"
+    url_name = "data_export"
+    url_pattern = rf"data_export"
     content_type = "text/csv"
 
     def get_data(self, params):
-        main_dv = "producer_decision"
-        suffix = "SENTENCE"
-        events = Player.objects.filter(inner_role=PRODUCER).values(
-            main_dv,
-            *COMMON_FIELDS,
-            "current_data__to_whom",
-        )
+        events = Player.objects.filter(link__isnull=False).values(
+                    "producer_decision",
+                    "interpreter_decision",
+                    *COMMON_FIELDS,
+                )
         if not events.exists():
             return
         if events.exists():
+            
             df = pd.DataFrame(data=events)
-            df[main_dv] = df[main_dv].apply(lambda x: json.loads(x) if x else [])
-            df["image"] = df["inner_data"].apply(
-                lambda x: json.loads(x).get("image") if x else None
-            )
-
-            # Create new columns
-            for i, row in df.iterrows():
-                for inner_index, inner_list in enumerate(row[main_dv]):
-                    for j, item in enumerate(inner_list):
-                        df.at[i, f"{suffix}_{inner_index+1}_{j+1}"] = item
-
-            # Drop the original column
-            df = df.drop(columns=[main_dv, "inner_data"])
-            return df
-
-
-class InterperterExport(PandasExport):
-    display_name = "Interpreter export"
-    url_name = "interpreter_decisions"
-    url_pattern = rf"interpreters"
-    content_type = "text/csv"
-
-    def get_data(self, params):
-        main_dv = "interpreter_decision"
-        suffix = "REWARD"
-        events = Player.objects.filter(inner_role=INTERPRETER).values(
-            main_dv, *COMMON_FIELDS
-        )
-        if not events.exists():
-            return
-        if events.exists():
-            df = pd.DataFrame(data=events)
-            df[main_dv] = df[main_dv].apply(lambda x: json.loads(x) if x else [])
-            df["inner_data"] = df["inner_data"].apply(lambda x: json.loads(x))
-            df["from_whom"] = df.inner_data.apply(
-                lambda x: x.get("from_whom") if x else None
-            )
-            df["image"] = df.inner_data.apply(lambda x: x.get("image") if x else None)
-            df["sentence_data"] = df.inner_data.apply(
-                lambda x: x.get("sentence_data") if x else None
-            )
-            # Create new columns
-            for i, row in df.iterrows():
-                for inner_index, item in enumerate(row[main_dv]):
-                    df.at[i, f"{suffix}_{inner_index+1}"] = item
-                for inner_index, inner_list in enumerate(row["sentence_data"]):
-                    for j, item in enumerate(inner_list):
-                        df.at[i, f"SENTENCE_{inner_index+1}_{j+1}"] = item
-            # Drop the original column
-            df = df.drop(columns=[main_dv, "inner_data", "sentence_data"])
             return df

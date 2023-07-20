@@ -8,6 +8,8 @@ from otree.api import (
     Currency as c,
     currency_range,
 )
+import random
+from django.forms.models import model_to_dict
 from .utils import get_balance, increase_space
 from otree.models import Session, Participant
 import json
@@ -37,7 +39,7 @@ Your app description
 class Constants(BaseConstants):
     name_in_url = "img_desc"
     players_per_group = None
-    num_rounds = 4
+    num_rounds = 60
     STUBURL = STUBURL
     PLACEMENT_ERR = "ERROR_BATCH_PLACEMENT"
     API_ERR = "API_ERROR"
@@ -96,7 +98,7 @@ class Subsession(BaseSubsession):
         logger.info(
             f"oTree session {session.code}. quick check if batch {active_batch} is completed"
         )
-        q = s.users.filter(batch=s.active_batch, processed=False)
+        q = session.batches.filter(batch=s.active_batch, processed=False)
         logger.info(
             f"CURRENT ACTIVE BANCTHS!: {active_batch}; NON PROCESSED SLOTS{q.count()}"
         )
@@ -109,23 +111,44 @@ class Subsession(BaseSubsession):
                 self.expand_slots()
 
     def creating_session(self):
-        self.active_batch = 0
-        if self.round_number == 1:
-            self.session.vars["active_batch"] = 0
+         self.active_batch = 1
+         if self.round_number == 1:
+            self.session.vars["active_batch"] = 1
             filename = self.session.config.get("filename")
             excel_data = get_data(filename)
+            data=excel_data.get("data")
+            self.session.vars["user_data"] = data
+            df=data
+             
+            self.session.vars["num_rounds"] = df.group_enumeration.max()
+            logger.info(f'TOTAL NUM ROUNDS:: {self.session.vars["num_rounds"]}')
+            assert (
+                df.group_enumeration.max() <= Constants.num_rounds
+            ), "PLEASE SET NUMBER OF ROUNDS IN OTREE HIGHER!"
+            dbatches = df.to_dict(orient="records")
+            raws = [
+                dict(
+                    session=self.session,
+                    batch=i.get("Exp"),
+                    item_nr=i.get("Item.Nr"),
+                    condition=i.get("Condition"),
+                    image=i.get("Item"),
+                    round_number=i.get("group_enumeration"),
+                    role=i.get("role"),
+                    id_in_group=i.get("id"),
+                    partner_id=i.get("partner_id"),
+                    sentences=i.get("sentences"),
+                )
+                for i in dbatches
+            ]
+            raws = [Batch(**i) for i in raws]
+            Batch.objects.bulk_create(raws)
+            pprint(self.session.batches.all().count())
 
-            self.session.vars["user_data"] = excel_data.get("data")
+            # practice settings 
             self.session.vars["practice_settings"] = excel_data.get("practice_settings")
 
-            data = self.session.vars["user_data"]
-            rounds = set(data["round"].tolist())
-            real_round_set = set(range(1, Constants.num_rounds + 1))
 
-            assert (
-                rounds.issubset(real_round_set) and 1 in rounds
-            ), "The dataset contains more rounds than allowed by  current oTree settings"
-            self.session.vars["num_rounds"] = len(rounds)
             self.session.vars["user_settings"] = excel_data.get("settings")
             self.session.vars["s3path"] = excel_data.get("settings").get("s3path")
             self.session.vars["extension"] = excel_data.get("settings").get("extension")
@@ -146,17 +169,11 @@ class Subsession(BaseSubsession):
             self.session.vars["interpreter_title"] = excel_data.get("settings").get(
                 "interpreter_title"
             )
-
-            df = self.session.vars["user_data"]
-            first_round = df[df["round"] == 1]
-            max_users = len(first_round)
-            batch0 = first_round[first_round["batch"] == 0]
-            batch_size = len(batch0)
-            # TODO: let's guarantee that number of participants is divisible by batch size
-            # TODO: we need to do a lot of checking while reading xls data actually.add()
-            # TODO: right now we do this in a very naive way but all this checking should be moved
-            # TODO: in a separate module
-            # TODO: Please, please, please, move all credentials to secrets folder and gitignore it otherwise it's path to disaster
+            unique_ids = df.id.unique()
+            unique_ids_wz = list(filter(lambda x: x != 0, unique_ids))
+            unique_exps=df[df.Exp != 0].Exp.unique()
+            batch_size=len(unique_ids_wz)
+            max_users=batch_size*len(unique_exps)
             if self.session.config.get("expand_slots"):
                 assert (
                     max_users <= self.session.num_participants
@@ -164,73 +181,113 @@ class Subsession(BaseSubsession):
             self.session.vars["max_users"] = max_users
             assert batch_size > 0, "Somemthing wrong with the batch size!"
             self.session.vars["batch_size"] = batch_size
-
-        df = self.session.vars["user_data"]
-        df_filtered = df[df["round"] == self.round_number]
-        data = df_filtered.to_dict(orient="records")
-        userdata = [UserData(**i, subsession=self, session=self.session) for i in data]
-        UserData.objects.bulk_create(userdata)
+            pprint(self.session.vars)
+            logger.info(f'{max_users=}; {batch_size=}' )
+ 
 
 
 class Group(BaseGroup):
     pass
 
 
-class UserData(djmodels.Model):
+class Batch(djmodels.Model):
     def __str__(self) -> str:
-        return f"batch: {self.batch}; round: {self.round}; belongs to: {self.owner}"
+        if self.owner:
+            return f"batch: {self.batch}; round: {self.round_number}; belongs to: {self.owner.code}"
+        return f"batch: {self.batch}; round: {self.round_number}; doesnt belongs to anyone yet"
 
-    subsession = djmodels.ForeignKey(
-        to=Subsession, on_delete=djmodels.CASCADE, related_name="users"
-    )
     session = djmodels.ForeignKey(
-        to=Session, on_delete=djmodels.CASCADE, related_name="userdata", null=True
+        to=Session,
+        on_delete=djmodels.CASCADE,
+        related_name="batches",
     )
     owner = djmodels.ForeignKey(
-        to=Participant, on_delete=djmodels.CASCADE, related_name="userdata", null=True
+        to=Participant, on_delete=djmodels.CASCADE, related_name="infos", null=True
     )
-    data = models.LongStringField()
-    round = models.IntegerField()
-    to_whom = models.IntegerField()
+    sentences = models.LongStringField()
+    rewards = models.LongStringField()
+    condition = models.StringField()
+    item_nr = models.StringField()
+    image = models.StringField()
+    round_number = models.IntegerField()
     role = models.StringField()
     batch = models.IntegerField()
     id_in_group = models.IntegerField()
+    partner_id = models.IntegerField()
     busy = models.BooleanField(initial=False)
     processed = models.BooleanField(initial=False)
-    overwrite = models.BooleanField()
+    
 
 
 class Player(BasePlayer):
     inner_role = models.StringField()
-    inner_data = models.LongStringField()
     batch = models.IntegerField()
     faulty = models.BooleanField(initial=False)
-    current_data = djmodels.ForeignKey(
-        to=UserData, on_delete=djmodels.CASCADE, related_name="userdata", null=True
-    )
-
-    def mark_data_processed(self):
-        UserData.objects.filter(owner=self.participant).update(processed=True)
-        self.subsession.check_for_batch_completion()
 
     def role(self):
         return self.inner_role
 
+    # BLOCK OF PROLIFIC-RELATED DATA
     prolific_id = models.StringField()
     prol_study_id = models.StringField()
     prol_session_id = models.StringField()
     completion_code = models.StringField()
     full_return_url = models.StringField()
+    # END OF BLOCK OF PROLIFIC-RELATED DATA
+
     producer_decision = models.LongStringField()
     interpreter_decision = models.LongStringField()
     start_decision_time = djmodels.DateTimeField(null=True)
     end_decision_time = djmodels.DateTimeField(null=True)
     decision_seconds = models.FloatField()
 
-    def get_sentences(self):
+    # link to data from excel sheet
+    link = djmodels.ForeignKey(
+        to=Batch, on_delete=djmodels.CASCADE, related_name="players", null=True
+    )
+
+    def get_sentences_data(self):
+        if self.link:
+            
+            if self.link.partner_id == 0:
+                return json.loads(self.link.sentences)
+            else:
+                return json.loads(self.get_previous_batch().get("sentences"))
+
+    def get_previous_batch(self):
+        if self.inner_role == INTERPRETER:
+            l = self.link
+            if l.partner_id == 0:
+                return dict(sentences=[])
+            obj = self.session.batches.get(
+                batch=self.subsession.active_batch - 1,
+                role=PRODUCER,
+                partner_id=l.id_in_group,
+                id_in_group=l.partner_id,
+                condition=l.condition,
+            )
+            return model_to_dict(obj)
+        else:
+            return dict(sentences=[])
+    def update_batch(self):
+        if self.link:
+            if self.inner_role==PRODUCER:
+                self.link.sentences=self.producer_decision
+            if self.inner_role==INTERPRETER:
+                self.link.rewards=self.interpreter_decision
+            self.link.save()
+             
+
+ 
+
+    def mark_data_processed(self):
+        Batch.objects.filter(owner=self.participant).update(processed=True)
+        self.subsession.check_for_batch_completion()
+
+    def get_full_sentences(self):
         prefix = self.session.vars.get("prefix", "")
         suffixes = self.session.vars.get("suffixes")
-        sentences = self.get_data().get("sentence_data")
+        sentences = self.get_sentences_data()
         sentences = [sublist for sublist in sentences if "" not in sublist]
         res = []
         for sentence in sentences:
@@ -241,60 +298,26 @@ class Player(BasePlayer):
                 expansion_list.insert(0, prefix)
             full_sentence = " ".join(expansion_list)
             res.append(full_sentence)
+        
         return res
 
-    def get_data(self):
-        return json.loads(self.inner_data)
+
 
     def get_image_url(self):
-        data = self.get_data()
-        image = data.get("image")
+        image=self.link.image
         return get_url_for_image(self, image)
 
-    @property
-    def link_to_data(self):
-        return self.participant.userdata.filter(round=self.round_number).first()
-
-    def update_next_batch(self):
-        """
-        1. we need to check if next batch is available? who know what what if this is the last one?
-        we get next batch, the same round number
-        each subsession gets all batches of the current round.
-        2. We need to check if we need to write to it - what if overwrite is false?
-        3. WE need to check if we have somethig to write? that is if role is P, and text is available
-        (this one can actualy become a bit more complciated later if they start producing more than one sentence
-        but let's not think aobut it at this stage)
-        """
-        ## We only update next batch if this player is producer
-        if self.inner_role == PRODUCER:
-            to_whom_id = self.link_to_data.to_whom
-            next_batch = self.subsession.users.filter(
-                batch=self.subsession.active_batch + 1
-            )
-            if next_batch.exists() and to_whom_id and to_whom_id > 0:
-                to_whoms = next_batch.filter(id_in_group=to_whom_id)
-                if to_whoms.exists():
-                    to_whom = to_whoms.first()
-                else:
-                    return
-                if not to_whom.overwrite:
-                    current_data = json.loads(self.link_to_data.data)
-                    current_data["sentence_data"] = json.loads(self.producer_decision)
-                    current_data["from_whom"] = self.participant.code
-                    to_whom.data = json.dumps(current_data)
-                    to_whom.save()
-
-        pass
+    
 
     def start(self):
         """
         This is ran once when a player starts each new round
         """
-        logger.info(f"IM IN START {self.round_number}")
         if self.round_number == 1:
-            # here we get ALL rounds for a specific id_in_group
-            active_batch = UserData.objects.filter(
-                batch=self.subsession.active_batch, session=self.session
+            # linking batch to participant, marking it busy
+
+            active_batch = self.session.batches.filter(
+                batch=self.subsession.active_batch,
             )
             try:
                 free_user_id = (
@@ -314,7 +337,13 @@ class Player(BasePlayer):
                 return
             free_user = active_batch.filter(busy=False, id_in_group=free_user_id)
             free_user.update(busy=True, owner=self.participant)
+        # in each round we get the participant-connected infoset, get the corresponding data for this round and link it
+        # to current user.
+        self.link = self.participant.infos.get(round_number=self.round_number)
+        self.inner_role = self.link.role
 
+        # the following block serves only for dealing with prolific users:
+        if self.round_number == 1:
             if self.session.config.get("for_prolific"):
                 vars = self.participant.vars
                 prol_study_id = vars.get("study_id")
@@ -379,10 +408,4 @@ class Player(BasePlayer):
                     if prol_session_id:
                         self.participant.label = prol_session_id
 
-        link_update = dict(
-            batch=self.link_to_data.batch,
-            inner_role=self.link_to_data.role,
-            inner_data=self.link_to_data.data,
-        )
-        self.current_data = self.link_to_data
-        Player.objects.filter(id=self.id).update(**link_update)
+
