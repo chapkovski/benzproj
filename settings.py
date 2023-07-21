@@ -45,7 +45,6 @@ SESSION_CONFIG_DEFAULTS = dict(
     s3path="https://chappyimgs.s3.us-west-1.amazonaws.com/",
     instructions_path="https://docs.google.com/document/d/e/2PACX-1vQvT3XleOaxDRAws2WDba6LsyhrkmDzD8YI4rj8duCdg4Pj5YC3ikmMy7Y81R7SMfouWa5TkQv5zldw/pub",
     expand_slots=True,
-    max_users=8,
     for_prolific=True,
     real_world_currency_per_point=1.00,
     participation_fee=0.00,
