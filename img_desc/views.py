@@ -104,8 +104,39 @@ COMMON_FIELDS = [
     "link__partner_id",
     "link__condition",
     "link__image",
+    "link__sentences",
+    "link__rewards",
 ]
+def expand_lists(df, col_name, prefix, level):
+    # converting from json first
+    df[col_name] = df[col_name].apply(
+        lambda x: json.loads(x) if pd.notna(x) and x != "" else None
+    )
+    # First expansion: get each list in its own column
 
+    df_new = df[col_name].apply(pd.Series)
+    if level > 1:
+        for i, col in enumerate(df_new):
+            # Second expansion: get each element of the inner lists in its own column
+            df_temp = df_new[col].apply(pd.Series)
+            df_temp.columns = [f"{prefix}_{i+1}_{j+1}" for j in range(df_temp.shape[1])]
+            df = pd.concat([df, df_temp], axis=1)
+    else:
+        df_new=df_new.add_prefix(f'{prefix}_')
+        df = pd.concat([df, df_new], axis=1)
+    return df
+
+# def expand_lists(df, col_name, prefix):
+#     df[col_name] = df[col_name].apply(
+#         lambda x: json.loads(x) if pd.notna(x) and x != "" else None
+#     )
+#     df_new = df[col_name].apply(pd.Series).add_prefix(prefix)
+#     df = pd.concat([df, df_new], axis=1)
+#     return df
+    
+
+
+ 
 
 class DataExport(PandasExport):
     display_name = "Data export"
@@ -115,13 +146,19 @@ class DataExport(PandasExport):
 
     def get_data(self, params):
         events = Player.objects.filter(link__isnull=False).values(
-                    "producer_decision",
-                    "interpreter_decision",
-                    *COMMON_FIELDS,
-                )
+            "producer_decision",
+            "interpreter_decision",
+            *COMMON_FIELDS,
+        )
         if not events.exists():
             return
         if events.exists():
-            
             df = pd.DataFrame(data=events)
+            df.columns = df.columns.str.replace("^link__", "", regex=True)
+            df = expand_lists(df, "rewards", "reward", level=1)
+            df = expand_lists(df, "sentences", "sentence", level=2)
+            prefix = "reward_"
+            cols_to_convert = df.filter(regex=f'^{prefix}').columns
+            df[cols_to_convert] = df[cols_to_convert].astype('Int64')
+
             return df

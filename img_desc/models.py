@@ -111,15 +111,15 @@ class Subsession(BaseSubsession):
                 self.expand_slots()
 
     def creating_session(self):
-         self.active_batch = 1
-         if self.round_number == 1:
+        self.active_batch = 1
+        if self.round_number == 1:
             self.session.vars["active_batch"] = 1
             filename = self.session.config.get("filename")
             excel_data = get_data(filename)
-            data=excel_data.get("data")
+            data = excel_data.get("data")
             self.session.vars["user_data"] = data
-            df=data
-             
+            df = data
+
             self.session.vars["num_rounds"] = df.group_enumeration.max()
             logger.info(f'TOTAL NUM ROUNDS:: {self.session.vars["num_rounds"]}')
             assert (
@@ -145,9 +145,8 @@ class Subsession(BaseSubsession):
             Batch.objects.bulk_create(raws)
             pprint(self.session.batches.all().count())
 
-            # practice settings 
+            # practice settings
             self.session.vars["practice_settings"] = excel_data.get("practice_settings")
-
 
             self.session.vars["user_settings"] = excel_data.get("settings")
             self.session.vars["s3path"] = excel_data.get("settings").get("s3path")
@@ -171,9 +170,9 @@ class Subsession(BaseSubsession):
             )
             unique_ids = df.id.unique()
             unique_ids_wz = list(filter(lambda x: x != 0, unique_ids))
-            unique_exps=df[df.Exp != 0].Exp.unique()
-            batch_size=len(unique_ids_wz)
-            max_users=batch_size*len(unique_exps)
+            unique_exps = df[df.Exp != 0].Exp.unique()
+            batch_size = len(unique_ids_wz)
+            max_users = batch_size * len(unique_exps)
             if self.session.config.get("expand_slots"):
                 assert (
                     max_users <= self.session.num_participants
@@ -182,8 +181,7 @@ class Subsession(BaseSubsession):
             assert batch_size > 0, "Somemthing wrong with the batch size!"
             self.session.vars["batch_size"] = batch_size
             pprint(self.session.vars)
-            logger.info(f'{max_users=}; {batch_size=}' )
- 
+            logger.info(f"{max_users=}; {batch_size=}")
 
 
 class Group(BaseGroup):
@@ -216,7 +214,6 @@ class Batch(djmodels.Model):
     partner_id = models.IntegerField()
     busy = models.BooleanField(initial=False)
     processed = models.BooleanField(initial=False)
-    
 
 
 class Player(BasePlayer):
@@ -248,7 +245,6 @@ class Player(BasePlayer):
 
     def get_sentences_data(self):
         if self.link:
-            
             if self.link.partner_id == 0:
                 return json.loads(self.link.sentences)
             else:
@@ -269,16 +265,14 @@ class Player(BasePlayer):
             return model_to_dict(obj)
         else:
             return dict(sentences=[])
+
     def update_batch(self):
         if self.link:
-            if self.inner_role==PRODUCER:
-                self.link.sentences=self.producer_decision
-            if self.inner_role==INTERPRETER:
-                self.link.rewards=self.interpreter_decision
+            if self.inner_role == PRODUCER:
+                self.link.sentences = self.producer_decision
+            if self.inner_role == INTERPRETER:
+                self.link.rewards = self.interpreter_decision
             self.link.save()
-             
-
- 
 
     def mark_data_processed(self):
         Batch.objects.filter(owner=self.participant).update(processed=True)
@@ -298,16 +292,12 @@ class Player(BasePlayer):
                 expansion_list.insert(0, prefix)
             full_sentence = " ".join(expansion_list)
             res.append(full_sentence)
-        
+
         return res
 
-
-
     def get_image_url(self):
-        image=self.link.image
+        image = self.link.image
         return get_url_for_image(self, image)
-
-    
 
     def start(self):
         """
@@ -407,5 +397,3 @@ class Player(BasePlayer):
                     )
                     if prol_session_id:
                         self.participant.label = prol_session_id
-
-

@@ -1,31 +1,36 @@
 from os import environ
 import os
 from dotenv import load_dotenv
-load_dotenv() 
+
+load_dotenv()
 
 
 PROLIFIC_URL = environ.get("PROLIFIC_URL", "https://cnn.com")
 
 
-
 EXTENSION_APPS = ["img_desc"]
 
 SESSION_CONFIGS = [
-    
+    dict(
+        expand_slots=False,
+        name="full",
+        display_name="Full study (practice + main)",
+        num_demo_participants=8,
+        app_sequence=["start", "img_desc"],
+    ),
     dict(
         expand_slots=False,
         name="img_desc",
-        display_name="img_desc",
+        display_name="Main study only",
         num_demo_participants=8,
         app_sequence=["img_desc"],
     ),
     dict(
-        name="full",
-        display_name="FULL",
+        name="practice",
+        display_name="practice pages",
         num_demo_participants=8,
         app_sequence=[
             "start",
-               "img_desc"
         ],
     ),
 ]
@@ -36,8 +41,8 @@ SESSION_CONFIGS = [
 # e.g. self.session.config['participation_fee']
 
 SESSION_CONFIG_DEFAULTS = dict(
-    filename='benz',
-    s3path='https://chappyimgs.s3.us-west-1.amazonaws.com/',
+    filename="benz",
+    s3path="https://chappyimgs.s3.us-west-1.amazonaws.com/",
     instructions_path="https://docs.google.com/document/d/e/2PACX-1vQvT3XleOaxDRAws2WDba6LsyhrkmDzD8YI4rj8duCdg4Pj5YC3ikmMy7Y81R7SMfouWa5TkQv5zldw/pub",
     expand_slots=True,
     max_users=8,
