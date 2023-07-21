@@ -126,13 +126,7 @@ def expand_lists(df, col_name, prefix, level):
         df = pd.concat([df, df_new], axis=1)
     return df
 
-# def expand_lists(df, col_name, prefix):
-#     df[col_name] = df[col_name].apply(
-#         lambda x: json.loads(x) if pd.notna(x) and x != "" else None
-#     )
-#     df_new = df[col_name].apply(pd.Series).add_prefix(prefix)
-#     df = pd.concat([df, df_new], axis=1)
-#     return df
+
     
 
 
