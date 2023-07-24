@@ -101,6 +101,7 @@ COMMON_FIELDS = [
     "decision_seconds",
     "link__id_in_group",
     "link__batch",
+    "link__role",
     "link__processed",
     "link__partner_id",
     "link__condition",
