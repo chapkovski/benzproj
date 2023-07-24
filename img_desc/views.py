@@ -99,6 +99,7 @@ COMMON_FIELDS = [
     "start_decision_time",
     "end_decision_time",
     "decision_seconds",
+    "inner_sentences",
     "link__id_in_group",
     "link__batch",
     "link__role",
@@ -150,13 +151,15 @@ class DataExport(PandasExport):
             df = pd.DataFrame(data=events)
             df.columns = df.columns.str.replace("^link__", "", regex=True)
             df = expand_lists(df, "rewards", "reward", level=1)
-            df = expand_lists(df, "sentences", "sentence", level=2)
+            df = expand_lists(df, "inner_sentences", "sentence", level=2)
             prefix = "reward_"
             cols_to_convert = df.filter(regex=f"^{prefix}").columns
             df[cols_to_convert] = df[cols_to_convert].astype("Int64")
-            name_mapping = {"id_in_group": "Id", "batch": "Exp", "item_nr": "Item.Nr"}
+            cols_to_drop=['sentences']
+            df=df.drop(columns=cols_to_drop)
+            name_mapping = {"id_in_group": "Id", "batch": "Exp", "item_nr": "Item.Nr", 'inner_sentences':'sentences'}
 
             # renaming the columns
             df.rename(columns=name_mapping, inplace=True)
-
+            
             return df

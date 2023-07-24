@@ -25,14 +25,14 @@ SESSION_CONFIGS = [
         num_demo_participants=8,
         app_sequence=["img_desc"],
     ),
-    dict(
-        name="practice",
-        display_name="practice pages",
-        num_demo_participants=8,
-        app_sequence=[
-            "start",
-        ],
-    ),
+    # dict(
+    #     name="practice",
+    #     display_name="practice pages",
+    #     num_demo_participants=8,
+    #     app_sequence=[
+    #         "start",
+    #     ],
+    # ),
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs

@@ -143,11 +143,12 @@ class Subsession(BaseSubsession):
             ]
             raws = [Batch(**i) for i in raws]
             Batch.objects.bulk_create(raws)
-            pprint(self.session.batches.all().count())
+             
 
             # practice settings
             self.session.vars["practice_settings"] = excel_data.get("practice_settings")
-
+            
+            self.session.vars["practice_pages"] = excel_data.get("practice_pages")
             self.session.vars["user_settings"] = excel_data.get("settings")
             self.session.vars["s3path"] = excel_data.get("settings").get("s3path")
             self.session.vars["extension"] = excel_data.get("settings").get("extension")
@@ -218,6 +219,7 @@ class Batch(djmodels.Model):
 
 class Player(BasePlayer):
     inner_role = models.StringField()
+    inner_sentences=models.LongStringField()
     batch = models.IntegerField()
     faulty = models.BooleanField(initial=False)
 
@@ -254,7 +256,7 @@ class Player(BasePlayer):
         if self.inner_role == INTERPRETER:
             l = self.link
             if l.partner_id == 0:
-                return dict(sentences=[])
+                return dict(sentences='[]')
             obj = self.session.batches.get(
                 batch=self.subsession.active_batch - 1,
                 role=PRODUCER,
@@ -264,7 +266,7 @@ class Player(BasePlayer):
             )
             return model_to_dict(obj)
         else:
-            return dict(sentences=[])
+            return dict(sentences='[]')
 
     def update_batch(self):
         if self.link:
@@ -331,7 +333,7 @@ class Player(BasePlayer):
         # to current user.
         self.link = self.participant.infos.get(round_number=self.round_number)
         self.inner_role = self.link.role
-
+        self.inner_sentences=json.dumps(self.get_sentences_data())
         # the following block serves only for dealing with prolific users:
         if self.round_number == 1:
             if self.session.config.get("for_prolific"):

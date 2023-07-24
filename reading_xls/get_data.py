@@ -137,6 +137,10 @@ def get_data(filename):
     settings_dict["interpreter_choices"] = allowed_value_converter(
         settings_dict["interpreter_choices"]
     )
+    settings_dict["practice_pages"] =         {
+            key:bool(int(value)) for key, value in settings_dict.items() if re.fullmatch("Practice\d+", key)
+    }
+
     DATA_WS = "data"
     raw = spreadsheet.worksheet(DATA_WS).get_all_records()
     df = pd.DataFrame(raw)

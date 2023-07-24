@@ -3,6 +3,7 @@ from ._builtin import Page as oTreePage, WaitPage
 from .models import Constants
 import logging
 from img_desc.utils import get_url_for_image
+from pprint import pprint
 
 logger = logging.getLogger("benzapp.start_pages")
 
@@ -45,10 +46,17 @@ class Instructions(Page):
     pass
 
 
-
 class _PracticePage(Page):
     instructions = True
     practice_id = None
+
+    def is_displayed(self):
+        pps = self.session.vars.get('user_settings',{}).get('practice_pages',{})
+        if pps:
+            curpage = pps.get(self.__class__.__name__, True)
+            return curpage
+
+        return True
 
     def js_vars(self):
         try:
