@@ -42,7 +42,7 @@ SESSION_CONFIGS = [
 
 SESSION_CONFIG_DEFAULTS = dict(
     filename="benz",
-    s3path="https://chappyimgs.s3.us-west-1.amazonaws.com/",
+    
     instructions_path="https://docs.google.com/document/d/e/2PACX-1vQvT3XleOaxDRAws2WDba6LsyhrkmDzD8YI4rj8duCdg4Pj5YC3ikmMy7Y81R7SMfouWa5TkQv5zldw/pub",
     expand_slots=True,
     for_prolific=True,
