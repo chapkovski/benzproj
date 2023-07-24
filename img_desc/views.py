@@ -105,10 +105,13 @@ COMMON_FIELDS = [
     "link__processed",
     "link__partner_id",
     "link__condition",
+    "link__item_nr",
     "link__image",
     "link__sentences",
     "link__rewards",
 ]
+
+
 def expand_lists(df, col_name, prefix, level):
     # converting from json first
     df[col_name] = df[col_name].apply(
@@ -124,15 +127,10 @@ def expand_lists(df, col_name, prefix, level):
             df_temp.columns = [f"{prefix}_{i+1}_{j+1}" for j in range(df_temp.shape[1])]
             df = pd.concat([df, df_temp], axis=1)
     else:
-        df_new=df_new.add_prefix(f'{prefix}_')
+        df_new = df_new.add_prefix(f"{prefix}_")
         df = pd.concat([df, df_new], axis=1)
     return df
 
-
-    
-
-
- 
 
 class DataExport(PandasExport):
     display_name = "Data export"
@@ -154,7 +152,11 @@ class DataExport(PandasExport):
             df = expand_lists(df, "rewards", "reward", level=1)
             df = expand_lists(df, "sentences", "sentence", level=2)
             prefix = "reward_"
-            cols_to_convert = df.filter(regex=f'^{prefix}').columns
-            df[cols_to_convert] = df[cols_to_convert].astype('Int64')
+            cols_to_convert = df.filter(regex=f"^{prefix}").columns
+            df[cols_to_convert] = df[cols_to_convert].astype("Int64")
+            name_mapping = {"id_in_group": "Id", "batch": "Exp", "item_nr": "Item.Nr"}
+
+            # renaming the columns
+            df.rename(columns=name_mapping, inplace=True)
 
             return df
