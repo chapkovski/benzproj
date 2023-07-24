@@ -100,13 +100,13 @@ class EndOfIntro(Page):
 
 
 page_sequence = [
-    # Consent,
-    # Demographics,
-    # Instructions,
+    Consent,
+    Demographics,
+    Instructions,
     Practice1,
-    # Practice2,
-    # Practice3,
-    # Practice4,
+    Practice2,
+    Practice3,
+    Practice4,
     Practice5,
     Practice6,
     Practice7,
