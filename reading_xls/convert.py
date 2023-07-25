@@ -4,7 +4,16 @@ from sys import exit
 import json
 NA_LIST=['', 'NA']
 def convert(df):
- 
+
+    df['Condition']=df['Condition'].astype(str)
+    def convert_with_padding(x):
+        try:
+            return str(int(x)).zfill(3)
+        except ValueError:
+            return x  # or whatever you want to do with non-numeric values
+
+    df['Condition'] = df['Condition'].apply(convert_with_padding)
+
     sentence_cols = df.filter(regex='^Sentence_').columns
     df[sentence_cols] = df[sentence_cols].fillna('')
     df[sentence_cols] = df[sentence_cols].astype(str)
