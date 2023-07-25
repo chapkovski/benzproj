@@ -166,11 +166,9 @@
             }
         },
         computed: {
+             
             isFormComplete() {
-                return this.items.every(item => item.field1 !== '' && item.field2 !== '');
-            },
-            isFormComplete() {
-                return this.items.length >= this.minItems && this.items.every(item => item.fields.every(field => field.value !== ''));
+                return this.items.length >= this.requiredNumSentences && this.items.every(item => item.fields.every(field => field.value !== ''));
             },
             getErrMessage() {
                 let errmsg = ''

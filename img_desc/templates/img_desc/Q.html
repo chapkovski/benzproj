@@ -1,6 +1,15 @@
 {% extends "global/Page.html" %}
 {% load otree static %}
 
+{% block global_styles %}
+
+{% if player.role == Constants.PRODUCER %}
+<link rel="preload" as="image" href="{{player.get_image_url}}">
+{% endif %}
+
+
+
+{% endblock %}
 {% block title %}
 Round {{view.round_number}}/{{session.vars.num_rounds}}
 {% endblock %}
