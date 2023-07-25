@@ -91,6 +91,17 @@ class PandasExport(View):
         else:
             return redirect(reverse("ExportIndex"))
 
+DEMOGRAPHICS_FIELDS=[
+      "gender",
+        "age",
+        "handedness",
+        "grew_up",
+        "currently_living",
+        "native_language",
+        "education",
+]
+PREFIX_START="participant__start_player__"
+DEMO_FULL_FULL_FIELDS=[f'{PREFIX_START}{i}' for i in DEMOGRAPHICS_FIELDS]
 
 COMMON_FIELDS = [
     "participant__code",
@@ -100,6 +111,9 @@ COMMON_FIELDS = [
     "end_decision_time",
     "decision_seconds",
     "inner_sentences",
+    "prolific_id",
+    "prol_study_id",
+    "prol_session_id",
     "link__id_in_group",
     "link__batch",
     "link__role",
@@ -110,6 +124,7 @@ COMMON_FIELDS = [
     "link__image",
     "link__sentences",
     "link__rewards",
+   *DEMO_FULL_FULL_FIELDS
 ]
 
 
@@ -140,7 +155,7 @@ class DataExport(PandasExport):
     content_type = "text/csv"
 
     def get_data(self, params):
-        events = Player.objects.filter(link__isnull=False).values(
+        events = Player.objects.filter(link__isnull=False).select_related('participant').prefetch_related('participant__start_player').values(
             "producer_decision",
             "interpreter_decision",
             *COMMON_FIELDS,
@@ -150,16 +165,22 @@ class DataExport(PandasExport):
         if events.exists():
             df = pd.DataFrame(data=events)
             df.columns = df.columns.str.replace("^link__", "", regex=True)
+            df.columns = df.columns.str.replace(f"^{PREFIX_START}", "", regex=True)
             df = expand_lists(df, "rewards", "reward", level=1)
             df = expand_lists(df, "inner_sentences", "sentence", level=2)
             prefix = "reward_"
             cols_to_convert = df.filter(regex=f"^{prefix}").columns
             df[cols_to_convert] = df[cols_to_convert].astype("Int64")
-            cols_to_drop=['sentences']
-            df=df.drop(columns=cols_to_drop)
-            name_mapping = {"id_in_group": "Id", "batch": "Exp", "item_nr": "Item.Nr", 'inner_sentences':'sentences'}
+            cols_to_drop = ["sentences"]
+            df = df.drop(columns=cols_to_drop)
+            name_mapping = {
+                "id_in_group": "Id",
+                "batch": "Exp",
+                "item_nr": "Item.Nr",
+                "inner_sentences": "sentences",
+            }
 
             # renaming the columns
             df.rename(columns=name_mapping, inplace=True)
-            
+
             return df
