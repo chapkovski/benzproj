@@ -6,6 +6,25 @@
     integrity="sha512-2rNj2KJ+D8s1ceNasTIex6z4HWyOnEYLVC3FigGOmyQCZc2eBXKgOxQmo3oKLHyfcj53uz4QMsRCWNbLd32Q1g=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+<!-- JS, Popper.js, and jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+<style>
+    .input-group-append {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        pointer-events: none;
+    }
+
+    .input-group-append .btn {
+        pointer-events: all;
+    }
+</style>
+
 <style>
     .input-group {
         max-width: 100%;
@@ -19,6 +38,14 @@
         display: none
     }
 
+    .help-button {
+        position: absolute!important;
+        top: -15px!important;
+        right: -15px!important;
+        background: none!important;
+        border: none!important;
+    }
+
     .error {
         border: 1px solid red;
         border-radius: 5px !important;
@@ -26,6 +53,37 @@
 </style>
 <div id="app" class="text-center" v-cloak>
     {% verbatim %}
+
+
+    <div id="app" class="container mt-5">
+        
+        <div class="modal" tabindex="-1" role="dialog" id="infoModal">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Input Information</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Here are the allowed input values:</p>
+                        <ul v-if="currentFieldChoices">
+                        <li v-for="choice in currentFieldChoices" :key="choice">{{choice}}</li>
+                        </ul>
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
     <input type="hidden" name="producer_decision" :value="JSON.stringify(formattedItems)">
     <input type="hidden" v-model="startTime" name="start_decision_time">
     <input type="hidden" v-model="endTime" name="end_decision_time">
@@ -37,9 +95,15 @@
                 <div class="prefix mx-3 text-nowrap" v-if="prefix">{{prefix}}</div>
                 <div v-for="(field, fieldIndex) in item.fields" :key="fieldIndex"
                     class="input-group mb-3 d-flex flex-nowrap">
-                    <input type="text" v-model.trim="field.value" class="form-control input-kids"
-                        :class="{ error: isError(field) }" :placeholder="`Field ${fieldIndex+1}`" required
-                        @input="hideError">
+                    <div style="position: relative;">
+                        <input type="text" v-model.trim="field.value" class="form-control input-kids"
+                            :class="{ error: isError(field) }" :placeholder="`Field ${fieldIndex+1}`" required
+                            @input="hideError">
+                        <button class="btn btn-outline-secondary help-button" type="button" data-toggle="tooltip"
+                            data-placement="top" title="Click for Info" @click="showInfo(field)" tabindex="-1">
+                            <i class="fa fa-question-circle"></i>
+                        </button>
+                    </div>
                     <span class="input-group-tex mx-3 text-nowrap">{{ field.suffix }}</span>
                 </div>
                 <button @click="addItem" style="flex-basis: 75px;" type="button" class="btn btn-success"
@@ -75,6 +139,8 @@
             }));
 
             return {
+                inputValue: "",
+                currentFieldChoices:null,
                 startTime: new Date().toISOString(),  // ISO string format "2023-07-19T16:14:33.789Z"
                 endTime: null,
                 durationInSeconds: null,
@@ -89,6 +155,10 @@
             }
         },
         methods: {
+            showInfo(field) {
+                this.currentFieldChoices=field.allowedValues;
+                $('#infoModal').modal('show');
+            },
             addItem() {
                 if (this.items.length < this.maxItems) {
                     let fields = window.suffixes.map((suffix, index) => ({
@@ -175,4 +245,7 @@
         }
     });
     app.mount('#app')
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
 </script>
