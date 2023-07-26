@@ -75,7 +75,7 @@
 
 
     </div>
-
+    <p v-if="sentences_left" class="alert alert-info">Make {{sentences_left}}.</p>
     <p v-if="error" class="alert alert-danger" v-html="errorMessage"></p>
     <button :disabled="!isFormComplete" @click="validate" class="btn btn-primary mb-3" type="button">Next</button>
 
@@ -166,7 +166,12 @@
             }
         },
         computed: {
-             
+            sentences_left() {
+                const remained = this.requiredNumSentences - this.items.length
+                if (remained <= 0) return false
+                const ending = remained === 1 ? '' : 's'
+                return `${remained} more sentence${ending}`
+            },
             isFormComplete() {
                 return this.items.length >= this.requiredNumSentences && this.items.every(item => item.fields.every(field => field.value !== ''));
             },
