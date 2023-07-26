@@ -8,7 +8,7 @@ from otree.api import (
     Currency as c,
     currency_range,
 )
-
+from reading_xls import get_data
 EDUCATION_CHOICES = [
     "Less than a high school diploma",
     "High school degree or equivalent (e.g. GED)",
@@ -34,7 +34,9 @@ class Constants(BaseConstants):
 
 
 class Subsession(BaseSubsession):
-    pass
+    def creating_session(self):
+        if self.round_number==1:
+            self.session.vars['consent']=get_data.read_doc()
 
 
 class Group(BaseGroup):

@@ -137,8 +137,10 @@ def get_data(filename):
     settings_dict["interpreter_choices"] = allowed_value_converter(
         settings_dict["interpreter_choices"]
     )
-    settings_dict["practice_pages"] =         {
-            key:bool(int(value)) for key, value in settings_dict.items() if re.fullmatch("Practice\d+", key)
+    settings_dict["practice_pages"] = {
+        key: bool(int(value))
+        for key, value in settings_dict.items()
+        if re.fullmatch("Practice\d+", key)
     }
 
     DATA_WS = "data"
@@ -162,9 +164,55 @@ def long_data(filename):
     return conv_data
 
 
+def read_doc():
+    from googleapiclient.discovery import build
+    from google.oauth2.service_account import Credentials
+    from googleapiclient.http import MediaIoBaseDownload
+    from google.oauth2.service_account import Credentials
+    import io
+
+    creds = Credentials.from_service_account_info(
+        google_creds, scopes=["https://www.googleapis.com/auth/drive"]
+    )
+    
+    
+    # Build the service
+    drive_service = build('drive', 'v3', credentials=creds)
+
+    # The ID of your Google Doc
+    file_id = "1frtr8zzT1KehperGjaNJNKgEh9fpZvHc0OvPuUgPblo"
+
+    # Use the 'files.get' method to retrieve the file's metadata
+    # Define the mimeType for HTML
+    mimeType = 'text/html'
+
+    # Use the 'files.export_media' method to download the file as HTML
+    request = drive_service.files().export_media(fileId=file_id, mimeType=mimeType)
+
+    # Create an in-memory binary stream to hold the downloaded file
+    fh = io.BytesIO()
+
+    # Initialize a media download object
+    downloader = MediaIoBaseDownload(fd=fh, request=request)
+
+    # Perform the download
+    done = False
+    while not done:
+        status, done = downloader.next_chunk()
+
+    # The file content is now in 'fh', which you can read and decode as HTML
+    html_content = fh.getvalue().decode('utf-8')
+    return (html_content)
+    # The link to download the file as HTML is under the 'text/html' key
+    # html_link = export_links.get('text/html')
+
+    # print(html_link)
+
+
 if __name__ == "__main__":
+    read_doc()
     # df = get_data("benz").get('data')
     # pprint(df.columns)
-    df = long_data("benz")
-    pprint(df.shape)
-    df.to_csv("./mocklong.csv", index=False)
+    # df = long_data("benz")
+    # pprint(df.shape)
+    # df.to_csv("./mocklong.csv", index=False)

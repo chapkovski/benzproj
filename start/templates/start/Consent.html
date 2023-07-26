@@ -6,90 +6,22 @@
 {% endblock %}
 
 {% block content %}
+<style>
+body{max-width: initial!important;}
+.otree-body.container{
+    
+    width: 100%!important;
+    max-width: 1000px;
+    margin-top: 0px!important;
+}
+h2.otree-title.page-header.mt-5{display:none}
+</style>
+{% autoescape off%}
+    {{session.vars.consent}}
+{% endautoescape %}
 
-<div style="width:800px;margin:auto;text-align:justify">
-
-    <h2 style="text-align:right">
-        <table style="width:800px">
-            <tr>
-                <td></td>
-                <td></td>
-                <td><img src="{% static 'global/img/zas.png' %}" width="110" alt="ZAS"></td>
-            </tr>
-        </table>
-    </h2>
-
-    <h2 style="text-align:center"> Welcome to our experiment!</h2>
-
-
-    <p>
-        Thank you for choosing to support our research by participating in our experiment! In doing so, you are making
-        an important contribution to foundational linguistic research conducted at the Leibniz-Centre General
-        Linguistics (ZAS). On this page we would like to inform you about the study.
-    </p>
-
-    <h3 style="text-align:center">What this study is about</h3>
-    <p>
-        This study examines how you use some English words when providing information for a specific decision problem.
-        Your task as a native English speaker is to describe pictures and make decisions on certain actions.
-    </p>
-
-    <h3 style="text-align:center">What you can expect</h3>
-    <p>
-        After the next page, where we ask you to provide some general information about yourself, we will explain your
-        task in more detail. This is followed by five practice rounds in which you will learn how to use the interface
-        for this experiment. This will be followed by the actual experiment, which will consist of 21 rounds of
-        describing pictures and 35 rounds of making decisions. We estimate that you will need about 30 minutes to
-        complete the experiment. After the final round of the experiment, a web page will appear with a link that will
-        take you back to Prolific and allow you to claim your £6.00 participation reward.
-    </p>
-
-    <h2 style="text-align:center">Privacy policy</h2>
-
-
-    <h3 style="text-align:center">Risks to you</h3>
-
-    There are no known risks to you in participating in this research.
-
-
-    <h3 style="text-align:center">Your participation is voluntary</h3>
-
-    <p>
-        Your participation is voluntary, and you are free to withdraw at any time, without comment and without incurring
-        any disadvantages for yourself.
-    </p>
-
-    <h3 style="text-align:center">Data storage</h3>
-
-    <p>
-        Your data will be safely stored, and we will ensure that no unauthorised persons will have access to them. If
-        you interrupt and withdraw from the session before completion, no data will be saved. After completion of the
-        experiment, however, your data cannot be deleted any more because they are stored anonymously.
-    </p>
-
-    <p>
-        The data will only be published in a form that does not allow conclusions to be drawn about individuals.
-        Thereby, the research is conducted in line with the ethical recommendations of the German Research Foundation.
-    </p>
-
-    <h3 style="text-align:center">Contact</h3>
-
-    <p>
-        If you have any questions, please contact <a href="mailto:benz@leibniz-zas.de">Dr. Anton Benz</a> at
-        Leibniz-Centre General Linguistics, Berlin.
-    </p>
-
-    <h3 style="text-align:center">Consent</h3>
-
-    <p>
-        By clicking on the button "I want to participate!" below, you confirm that you have been sufficiently informed
-        and that you participate voluntarily.
-    </p>
+    <button class="otree-btn-next btn btn-primary">I want to participate!</button>
 
 
 
-<button class="otree-btn-next btn btn-primary">I want to participate!</button>
-
- 
-
-{% endblock %}
+    {% endblock %}
