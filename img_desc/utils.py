@@ -60,8 +60,14 @@ def increase_space(study_id, num_extra, max_users):
     logger.info(
         f"calling prolific api requesting to increase places to {num_current_places + num_extra} in a study {study_id}"
     )
+    logger.info(f"payload: {payload}; url: {url}")
     response = requests.request("PATCH", url, headers=headers, data=payload)
-
+    print('-' * 20)
+    logger.info(f"response: {response}")
+    logger.info(f"response.json(): {response.json()}")
+    logger.info(f"response.text: {response.text}")
+    logger.info(f'response.status_code: {response.status_code}')
+    print('-'*20)
     return response.json()
 
 
