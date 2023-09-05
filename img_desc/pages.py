@@ -71,12 +71,12 @@ class Q(Page):
         self.player.update_batch()
         print("before_next_page", self.session.vars["num_rounds"], self.round_number)
         if self.round_number == self.session.vars["num_rounds"]:
+            self.player.mark_data_processed()
             try:
                 self.player.vars_dump = json.dumps(self.player.participant.vars)
             except Exception as e:
                 logger.error("Failed to dump participant vars")
                 logger.error(e)
-            self.player.mark_data_processed()
 
 
 class FinalForProlific(Page):
