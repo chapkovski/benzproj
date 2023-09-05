@@ -210,9 +210,9 @@ def read_doc():
 
 
 if __name__ == "__main__":
-    read_doc()
-    # df = get_data("benz").get('data')
-    # pprint(df.columns)
+    # read_doc()
+    df = get_data("marbExpFullEN_1").get('data')
+    pprint(df.shape)
     # df = long_data("benz")
     # pprint(df.shape)
-    # df.to_csv("./mocklong.csv", index=False)
+    df.to_csv("./mock.csv", index=False)

@@ -3,6 +3,16 @@ import json
 from pprint import pprint
 import logging
 
+import os
+from dotenv import load_dotenv
+from os import environ
+load_dotenv()
+
+
+PROLIFIC_API_KEY = environ.get("PROLIFIC_API_KEY")
+if not PROLIFIC_API_KEY:
+    raise ValueError("PROLIFIC_API_KEY not set")
+
 STUBURL = "https://app.prolific.co/submissions/complete?cc="
 logger = logging.getLogger("benzapp.utils")
 
@@ -11,7 +21,7 @@ url = "https://api.prolific.co/api/v1/workspaces/647787b9fe04daac6e2e944e/balanc
 payload = ""
 headers = {
     "Content-Type": "application/json",
-    "Authorization": "Token Ii1nZ3vcUlBrqNQ4V1zLReUvJN_oIHzv6bWtpv4Nz7vaagV2DIHrG55hptrkdqrQxb746Sto4X4CGYo2B_nendVeQSNa0ufdyidaUUWakndIN-EKavjRySww",
+    "Authorization": f"Token {PROLIFIC_API_KEY}",
 }
 
 
@@ -80,6 +90,7 @@ def increase_space(study_id, num_extra, max_users):
     return response.json()
 
 
+pprint(get_balance())
 if __name__ == "__main__":
  
     pprint(increase_space("61c1a16c9e1ee089d32f675b", 1, 15))
