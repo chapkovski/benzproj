@@ -234,7 +234,7 @@ class Player(BasePlayer):
     completion_code = models.StringField()
     full_return_url = models.StringField()
     # END OF BLOCK OF PROLIFIC-RELATED DATA
-
+    vars_dump = models.LongStringField()
     producer_decision = models.LongStringField()
     interpreter_decision = models.LongStringField()
     start_decision_time = djmodels.DateTimeField(null=True)
