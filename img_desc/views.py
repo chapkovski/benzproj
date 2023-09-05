@@ -12,7 +12,7 @@ import logging
 from django.utils import timezone
 from pprint import pprint
 
-RETURNED_STATUSES = ["RETURNED", "TIMED-OUT"]
+RETURNED_STATUSES = ["RETURNED", "TIMED-OUT", "REJECTED"]
 STATUS_CHANGE = "submission.status.change"
 logger = logging.getLogger("benzapp.views")
 
@@ -51,11 +51,17 @@ class HookView(View):
                 if participants.exists():
                     msgs = []
                     for p in participants:
+                        if p.vars.get('full_study_completed'): # we don't want to release the slot if the study is completed.
+                            msg = f"Player {p.code}, prolific PID {participant_id} has completed the study. We won't release the slot"
+                            logger.info(msg)
+                            msgs.append(msg)
+                            continue
+
                         i = Batch.objects.filter(owner=p).update(busy=False, owner=None)
                         if i > 0:
                             msg = f"Player {p.code} released the slot. Prolific participant {participant_id} returned the study"
                         else:
-                            msg = f"It seems that player {p.code} has no User Data attached (probably already released)"
+                            msg = f"It seems that player {p.code} has no User Data attached (probably already released or did not reach the stage)"
                         logger.info(msg)
                         msgs.append(msg)
 

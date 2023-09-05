@@ -66,4 +66,12 @@ class Player(BasePlayer):
         choices=EDUCATION_CHOICES,
         widget=widgets.RadioSelect,
     )
-    
+
+    def start(self):
+        if self.round_number == 1:
+            if self.session.config.get("for_prolific"):
+                vars = self.participant.vars
+                prol_session_id = vars.get("session_id")
+                if prol_session_id:
+                    self.participant.label = prol_session_id
+

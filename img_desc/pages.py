@@ -69,6 +69,7 @@ class Q(Page):
 
     def before_next_page(self):
         self.player.update_batch()
+        print("before_next_page", self.session.vars["num_rounds"], self.round_number)
         if self.round_number == self.session.vars["num_rounds"]:
             self.player.mark_data_processed()
 

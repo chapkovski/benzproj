@@ -41,7 +41,7 @@ SESSION_CONFIGS = [
 # e.g. self.session.config['participation_fee']
 
 SESSION_CONFIG_DEFAULTS = dict(
-    filename="benz",
+    filename="test_philipp",
     
     instructions_path="https://docs.google.com/document/d/e/2PACX-1vQvT3XleOaxDRAws2WDba6LsyhrkmDzD8YI4rj8duCdg4Pj5YC3ikmMy7Y81R7SMfouWa5TkQv5zldw/pub",
     expand_slots=True,

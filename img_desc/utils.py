@@ -24,12 +24,18 @@ def get_url_for_image(player, img, extension=None):
 
 def get_balance():
     response = requests.request("GET", url, headers=headers, data=payload)
+    if response.status_code != 200:
+        logger.warning(f"Get error trying to get balance. Status code: {response.status_code}")
+        return
     return response.json()
 
 
 def get_study(study_id):
     url = f"https://api.prolific.co/api/v1/studies/{study_id}/"
     response = requests.request("GET", url, headers=headers, data=payload)
+    if response.status_code != 200:
+        logger.warning(f"Get error trying to get data for study {study_id}")
+        return
     return response.json()
 
 
@@ -62,6 +68,9 @@ def increase_space(study_id, num_extra, max_users):
     )
     logger.info(f"payload: {payload}; url: {url}")
     response = requests.request("PATCH", url, headers=headers, data=payload)
+    if response.status_code != 200:
+        logger.warning(f"Get error trying to increase places in study {study_id}")
+        return
     print('-' * 20)
     logger.info(f"response: {response}")
     logger.info(f"response.json(): {response.json()}")

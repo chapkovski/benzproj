@@ -83,7 +83,7 @@ class Subsession(BaseSubsession):
                 )
             )
         else:
-            logger.warning("No study id data is available! slot expansion failed")
+            logger.warning("No study id data is available! slot expansion failed. params: study_id: {}, max_users: {}, batch_size: {}".format(study_id, max_users, batch_size))
 
     def check_for_batch_completion(self):
         """
@@ -119,8 +119,10 @@ class Subsession(BaseSubsession):
             data = excel_data.get("data")
             self.session.vars["user_data"] = data
             df = data
-
             self.session.vars["num_rounds"] = df.group_enumeration.max()
+            # IMPORTANT!!! TODO!!!! REMOVE THIS LINE
+            self.session.vars["num_rounds"] = 1
+            # IMPORTANT!!! TODO!!!! REMOVE PREVIOUS LINE!!!!
             logger.info(f'TOTAL NUM ROUNDS:: {self.session.vars["num_rounds"]}')
             assert (
                 df.group_enumeration.max() <= Constants.num_rounds
@@ -177,11 +179,10 @@ class Subsession(BaseSubsession):
             if self.session.config.get("expand_slots"):
                 assert (
                     max_users <= self.session.num_participants
-                ), "Max users from the excel sheet should be equal or less than the number of participants"
+                ), f"The number of participants ({self.session.num_participants}) should be higher than the number of users from the spreadsheet ({max_users})!"
             self.session.vars["max_users"] = max_users
             assert batch_size > 0, "Somemthing wrong with the batch size!"
             self.session.vars["batch_size"] = batch_size
-            pprint(self.session.vars)
             logger.info(f"{max_users=}; {batch_size=}")
 
 
@@ -277,6 +278,7 @@ class Player(BasePlayer):
             self.link.save()
 
     def mark_data_processed(self):
+        self.participant.vars['full_study_completed'] = True
         Batch.objects.filter(owner=self.participant).update(processed=True)
         self.subsession.check_for_batch_completion()
 

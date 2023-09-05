@@ -108,8 +108,8 @@ class EndOfIntro(Page):
 
 
 page_sequence = [
-    Consent,
-    Demographics,
+    # Consent, # TODO uncomment this when we have consent!!!!!!
+    # Demographics, # TODO: uncomment this when we have demographics!!!!!!
     Instructions,
     Practice1,
     Practice2,
