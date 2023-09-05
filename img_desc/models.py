@@ -120,9 +120,7 @@ class Subsession(BaseSubsession):
             self.session.vars["user_data"] = data
             df = data
             self.session.vars["num_rounds"] = df.group_enumeration.max()
-            # IMPORTANT!!! TODO!!!! REMOVE THIS LINE
-            # self.session.vars["num_rounds"] = 1
-            # IMPORTANT!!! TODO!!!! REMOVE PREVIOUS LINE!!!!
+
             logger.info(f'TOTAL NUM ROUNDS:: {self.session.vars["num_rounds"]}')
             assert (
                 df.group_enumeration.max() <= Constants.num_rounds
