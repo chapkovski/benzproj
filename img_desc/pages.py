@@ -10,9 +10,12 @@ from django.forms.models import model_to_dict
 
 logger = logging.getLogger("benzapp.pages")
 
+
 class MyPage(Page):
     def is_displayed(self):
         return self.round_number <= self.session.vars["num_rounds"]
+
+
 class FaultyCatcher(Page):
     def is_displayed(self):
         return self.player.faulty
@@ -30,7 +33,7 @@ class Q(Page):
         if self.player.link:
             return dict(d=model_to_dict(self.player.link))
         else:
-            return dict(d='')
+            return dict(d="")
 
     def is_displayed(self):
         return self.round_number <= self.session.vars["num_rounds"]
@@ -61,7 +64,7 @@ class Q(Page):
             if self.player.inner_role == PRODUCER:
                 flatten_decisions = [list(i.values()) for i in decisions]
                 self.player.producer_decision = json.dumps(flatten_decisions)
-                self.player.inner_sentences=json.dumps(flatten_decisions)
+                self.player.inner_sentences = json.dumps(flatten_decisions)
             if self.player.inner_role == INTERPRETER:
                 flatten_decisions = [i.get("choice") for i in decisions]
                 self.player.interpreter_decision = json.dumps(flatten_decisions)
@@ -79,6 +82,14 @@ class Q(Page):
                 logger.error(e)
 
 
+class Feedback(Page):
+    form_model = "player"
+    form_fields = ["feedback"]
+
+    def is_displayed(self):
+        return self.round_number == self.session.vars["num_rounds"]
+
+
 class FinalForProlific(Page):
     def is_displayed(self):
         return (
@@ -93,4 +104,4 @@ class FinalForProlific(Page):
         return redirect(FALLBACK_URL)
 
 
-page_sequence = [FaultyCatcher, Q, FinalForProlific]
+page_sequence = [FaultyCatcher, Q, Feedback, FinalForProlific]

@@ -221,7 +221,9 @@ class Player(BasePlayer):
     inner_sentences=models.LongStringField()
     batch = models.IntegerField()
     faulty = models.BooleanField(initial=False)
-
+    feedback=models.LongStringField(
+        label=''
+    )
     def role(self):
         return self.inner_role
 
