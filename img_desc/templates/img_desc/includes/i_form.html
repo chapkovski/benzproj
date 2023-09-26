@@ -6,6 +6,8 @@
 </script>
 <div id="app">
     {% verbatim %}
+  
+
     <form @submit.prevent="checkChoices">
         <input type="hidden" name="interpreter_decision" :value="JSON.stringify(sweets)">
         <input type="hidden" v-model="startTime" name="start_decision_time">
@@ -60,8 +62,9 @@
                 this.durationInSeconds = (new Date(this.endTime) - new Date(this.startTime)) / 1000;
 
                 this.$nextTick(() => {
+                    
                     // After the next DOM update cycle
-                    $('#form').submit()
+                    {# $('#form').submit() #}
                 });
 
                 $('#form').submit()
