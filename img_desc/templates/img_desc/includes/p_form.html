@@ -126,7 +126,7 @@
                 </div>
                 <button @click="addItem" style="flex-basis: 75px;" type="button" class="btn btn-success"
                     :disabled="items.length === maxItems">+</button>
-                <button @click="removeItem(index)" type="button" :disabled="items.length === minItems"
+                <button @click="removeItem(itemIndex)" type="button" :disabled="items.length === minItems"
                     class="btn btn-danger" style="flex-basis: 75px;">-</button>
 
             </div>
