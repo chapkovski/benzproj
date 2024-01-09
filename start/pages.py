@@ -92,18 +92,14 @@ class Practice4(_PracticePage):
     practice_id = 4
     def js_vars(self):
         default_settings = super().js_vars().get("settings", {}).copy()
-        print('OLD' * 100)
-        pprint(default_settings)
-        print('OLD' * 100)
+
         if default_settings:
             right_answer = default_settings.get("right_answer")
             if right_answer:
                 # let's convert the strings contained in each element of right_answer array to subarrays
                 # so that we can use them in the template
                 default_settings["right_answer"] =  [[item.strip() for item in element.split(';')] for element in right_answer]
-        print('*'*100)
-        pprint(default_settings)
-        print('*'*100)
+
         return dict(settings=default_settings)
 
 
@@ -130,9 +126,9 @@ page_sequence = [
     # Practice1,
     # Practice2,
     # Practice3,
-    Practice4,
+    # Practice4,
     # Practice5,
     # Practice6,
     # Practice7,
-    # EndOfIntro,
+    EndOfIntro,
 ]

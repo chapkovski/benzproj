@@ -39,6 +39,7 @@ class Q(Page):
         return self.round_number <= self.session.vars["num_rounds"]
 
     def post(self):
+        logger.info(f'POST: {self.request.POST.dict()} by participant {self.player.participant.code}; session {self.session.code}; round {self.round_number}; participant label {self.player.participant.label}')
         time_vars = [
             "start_decision_time",
             "end_decision_time",

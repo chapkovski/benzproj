@@ -62,12 +62,12 @@
                 this.durationInSeconds = (new Date(this.endTime) - new Date(this.startTime)) / 1000;
 
                 this.$nextTick(() => {
-                    
+                    $('#form').submit()
                     // After the next DOM update cycle
                     {# $('#form').submit() #}
                 });
 
-                $('#form').submit()
+
 
             },
         },
