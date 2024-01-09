@@ -30,6 +30,7 @@ class Q(Page):
     instructions = True
 
     def vars_for_template(self):
+        pprint(self.session.vars.get('allowed_regex'))
         if self.player.link:
             return dict(d=model_to_dict(self.player.link))
         else:

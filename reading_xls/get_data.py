@@ -70,6 +70,16 @@ def convert_to_dict(json_str):
         return {}
 
 
+def validate_regex_patterns(regexs):
+    valid_regexs = []
+    for regex in regexs:
+        try:
+            re.compile(regex)
+            valid_regexs.append(regex)  # Add to the list if the regex is valid
+        except re.error:
+            print(f"Invalid regex pattern: {regex}")
+            raise Exception(f"Invalid regex pattern: {regex}")
+    return valid_regexs
 def get_data(filename):
     spreadsheet = gc.open(filename)
 
@@ -108,9 +118,7 @@ def get_data(filename):
                 practice_dict[key] = value
 
         result_practice_dict[ws.title] = practice_dict
-    print('-'*100)
-    pprint(result_practice_dict)
-    print('-'*100)
+
 
     wsh_names = set([i.title for i in spreadsheet.worksheets()])
     if not ALLOWED_WS_NAMES.issubset(wsh_names):
@@ -132,6 +140,13 @@ def get_data(filename):
     def allowed_value_converter(v):
         return [item.strip() for item in v.split(";")]
 
+    regexs =  [
+        value
+        for key, value in settings_dict.items()
+        if re.fullmatch("allowed_regex_\d+", key)
+    ]
+    valid_regexs = validate_regex_patterns(regexs)
+    settings_dict["allowed_regex"] = valid_regexs
     settings_dict["allowed_values"] = [
         allowed_value_converter(value)
         for key, value in settings_dict.items()
@@ -145,6 +160,7 @@ def get_data(filename):
         for key, value in settings_dict.items()
         if re.fullmatch("Practice\d+", key)
     }
+
 
     DATA_WS = "data"
     raw = spreadsheet.worksheet(DATA_WS).get_all_records()

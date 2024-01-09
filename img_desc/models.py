@@ -159,6 +159,7 @@ class Subsession(BaseSubsession):
                 [item for item in sublist if item != ""] for sublist in allowed_values
             ]
             self.session.vars["allowed_values"] = allowed_values
+            self.session.vars['allowed_regex'] = excel_data.get("settings").get("allowed_regex")
             assert len(self.session.vars.get("suffixes", [])) == len(
                 self.session.vars.get("allowed_values", [])
             ), "Number of provided fields should coincide with number of allowed values sets."

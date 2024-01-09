@@ -141,11 +141,14 @@
 
     {% endverbatim %}
 </div>
+
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script>
+
     window.prefix = {{ session.vars.prefix | json }};
     window.suffixes = {{ session.vars.suffixes | json }}
     window.allowedValues = {{ session.vars.allowed_values | json }}
+    window.regex = {{ session.vars.allowed_regex | json }};
 </script>
 <script>
     const app = Vue.createApp({
@@ -153,6 +156,7 @@
             let fields = window.suffixes.map((suffix, index) => ({
                 value: '',
                 suffix: suffix,
+                regex: new RegExp(window.regex[index], 'i') ,
                 allowedValues: window.allowedValues[index].map(item => item.toLowerCase())
             }));
 
@@ -182,6 +186,7 @@
                     let fields = window.suffixes.map((suffix, index) => ({
                         value: '',
                         suffix: suffix,
+                         regex: new RegExp(window.regex[index], 'i'), // Add regex here
                         allowedValues: window.allowedValues[index].map(item => item.toLowerCase())
                     }));
                     this.items.push({ fields: fields });
@@ -232,10 +237,14 @@
             },
             checkSingleField(field) {
                 const convValue = field.value.toLowerCase().trim()
-                aValues = field.allowedValues;
-                const inAllowedValues = aValues.length === 0 ? true : aValues.includes(convValue)
+                const regex = field.regex;
+                console.debug(convValue, regex, regex.test(convValue))
+                console.debug('*')
+                return regex.test(convValue);
+                //aValues = field.allowedValues;
+                //const inAllowedValues = aValues.length === 0 ? true : aValues.includes(convValue)
 
-                return (inAllowedValues);
+                //return (inAllowedValues);
             },
             isError(field) {
                 return this.validated && !this.checkSingleField(field);
