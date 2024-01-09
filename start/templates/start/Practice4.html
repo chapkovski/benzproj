@@ -67,8 +67,8 @@
     const app = Vue.createApp({
         data() {
             let correct_answers_raw = js_vars.settings.right_answer;
-            let correct_answers = correct_answers_raw.map(item => item.split(";"));
-
+            let correct_answers = correct_answers_raw
+            console.debug('correct_answers', correct_answers);
             let fields = window.suffixes.map((suffix, index) => ({
                 value: '',
                 suffix: suffix,
@@ -118,6 +118,8 @@
 
                 let sortedUserAnswer = [...this.flattenValues].sort();
                 let sortedRightAnswer = [...this.correct_answers].sort();
+                console.debug(sortedRightAnswer)
+                console.debug(sortedUserAnswer)
 
                 // Then, compare the JSON stringified versions
                 let isCorrect = JSON.stringify(sortedUserAnswer) === JSON.stringify(sortedRightAnswer);

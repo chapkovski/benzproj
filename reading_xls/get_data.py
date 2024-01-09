@@ -108,6 +108,9 @@ def get_data(filename):
                 practice_dict[key] = value
 
         result_practice_dict[ws.title] = practice_dict
+    print('-'*100)
+    pprint(result_practice_dict)
+    print('-'*100)
 
     wsh_names = set([i.title for i in spreadsheet.worksheets()])
     if not ALLOWED_WS_NAMES.issubset(wsh_names):
