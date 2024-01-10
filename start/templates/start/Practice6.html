@@ -81,20 +81,20 @@
 
     {% endverbatim %}
 </div>
+
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="{% static 'global/js/input_functions.js' %}"></script>
 <script>
     window.suffixes = {{ session.vars.suffixes | json }}
     window.allowedValues = {{ session.vars.allowed_values | json }}
+    window.regex = {{ session.vars.allowed_regex | json }};
 </script>
+
 <script>
     const app = Vue.createApp({
         data() {
 
-            let fields = window.suffixes.map((suffix, index) => ({
-                value: '',
-                suffix: suffix,
-                allowedValues: window.allowedValues[index].map(item => item.toLowerCase())
-            }));
+
             return {
                 suffixes: window.suffixes,
                 minItems: 1,
@@ -104,7 +104,7 @@
                 image_path: js_vars.settings.full_image_path,
                 title: js_vars.settings.title,
                 main_text: js_vars.settings.main_text,
-                items: [{ fields: fields }],
+                items: [{ fields: getFields() }],
                 error: false,
                 contentError: false,
                 errorMessage: '',
@@ -112,16 +112,7 @@
             }
         },
         methods: {
-            addItem() {
-                if (this.items.length < this.maxItems) {
-                    let fields = window.suffixes.map((suffix, index) => ({
-                        value: '',
-                        suffix: suffix,
-                        allowedValues: window.allowedValues[index].map(item => item.toLowerCase())
-                    }));
-                    this.items.push({ fields: fields });
-                }
-            },
+            addItem: addItem,
             removeItem(index) {
                 if (this.items.length > this.minItems) {
                     this.items.splice(index, 1);
@@ -154,13 +145,7 @@
                 this.error = false;
                 this.validated = false;
             },
-            checkSingleField(field) {
-                const convValue = field.value.toLowerCase().trim()
-                aValues = field.allowedValues;
-                const inAllowedValues = aValues.length === 0 ? true : aValues.includes(convValue)
-
-                return (inAllowedValues);
-            },
+            checkSingleField: checkSingleField,
             isError(field) {
                 return this.validated && !this.checkSingleField(field);
             }
