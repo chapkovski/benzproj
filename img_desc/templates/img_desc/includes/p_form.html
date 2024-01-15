@@ -143,22 +143,19 @@
 </div>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="{% static 'global/js/input_functions.js' %}"></script>
 <script>
 
     window.prefix = {{ session.vars.prefix | json }};
     window.suffixes = {{ session.vars.suffixes | json }}
     window.allowedValues = {{ session.vars.allowed_values | json }}
     window.regex = {{ session.vars.allowed_regex | json }};
+    window.caseflag = {{ session.vars.caseflag | json }};
 </script>
 <script>
     const app = Vue.createApp({
         data() {
-            let fields = window.suffixes.map((suffix, index) => ({
-                value: '',
-                suffix: suffix,
-                regex: new RegExp(window.regex[index], 'i') ,
-                allowedValues: window.allowedValues[index].map(item => item.toLowerCase())
-            }));
+
 
             return {
                 inputValue: "",
@@ -170,7 +167,7 @@
                 minItems: 1,
                 prefix: window.prefix,
                 suffixes: window.suffixes,
-                items: [{ fields: fields }],
+                items: [{ fields: getFields() }],
                 error: false,
                 errorMessage: '',
                 validated: false
@@ -181,17 +178,7 @@
                 this.currentFieldChoices=field.allowedValues;
                 $('#infoModal').modal('show');
             },
-            addItem() {
-                if (this.items.length < this.maxItems) {
-                    let fields = window.suffixes.map((suffix, index) => ({
-                        value: '',
-                        suffix: suffix,
-                         regex: new RegExp(window.regex[index], 'i'), // Add regex here
-                        allowedValues: window.allowedValues[index].map(item => item.toLowerCase())
-                    }));
-                    this.items.push({ fields: fields });
-                }
-            },
+            addItem: addItem,
             removeItem(index) {
                 if (this.items.length > this.minItems) {
                     this.items.splice(index, 1);
@@ -235,17 +222,7 @@
                 this.error = false;
                 this.validated = false;
             },
-            checkSingleField(field) {
-                const convValue = field.value.toLowerCase().trim()
-                const regex = field.regex;
-                console.debug(convValue, regex, regex.test(convValue))
-                console.debug('*')
-                return regex.test(convValue);
-                //aValues = field.allowedValues;
-                //const inAllowedValues = aValues.length === 0 ? true : aValues.includes(convValue)
-
-                //return (inAllowedValues);
-            },
+           checkSingleField: checkSingleField,
             isError(field) {
                 return this.validated && !this.checkSingleField(field);
             }

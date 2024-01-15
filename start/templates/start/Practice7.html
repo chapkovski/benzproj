@@ -87,6 +87,7 @@
     window.suffixes = {{ session.vars.suffixes | json }}
     window.allowedValues = {{ session.vars.allowed_values | json }}
     window.regex = {{ session.vars.allowed_regex | json }};
+    window.caseflag = {{ session.vars.caseflag | json }};
 </script>
 <script>
     const app = Vue.createApp({
