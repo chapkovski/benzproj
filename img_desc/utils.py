@@ -54,9 +54,15 @@ def get_completion_info(study_id):
     if study_data.get("error"):
         logger.warning(f"Get error trying to get data for study {study_id}")
         return
-    completion_code = study_data.get("completion_code")
-    full_return_url = f"{STUBURL}{completion_code}"
-    return dict(completion_code=completion_code, full_return_url=full_return_url)
+    completion_codes = study_data.get("completion_codes", [])
+
+    # Find the first completion code with "COMPLETED" code_type
+    completed_code = next(
+        (code_info["code"] for code_info in completion_codes if code_info.get("code_type") == "COMPLETED"), "NO_CODE")
+
+    full_return_url = f"{STUBURL}{completed_code}"
+    logger.info(f"full_return_url: {full_return_url}; completed_code: {completed_code}")
+    return dict(completion_code=completed_code, full_return_url=full_return_url)
 
 
 def increase_space(study_id, num_extra, max_users):

@@ -30,7 +30,6 @@ class Q(Page):
     instructions = True
 
     def vars_for_template(self):
-        pprint(self.session.vars.get('allowed_regex'))
         if self.player.link:
             return dict(d=model_to_dict(self.player.link))
         else:
@@ -74,8 +73,10 @@ class Q(Page):
 
     def before_next_page(self):
         self.player.update_batch()
-        print("before_next_page", self.session.vars["num_rounds"], self.round_number)
+        logger.info(f'before_next_page. participant {self.player.participant.code}; session {self.session.code}; round {self.round_number}; participant label {self.player.participant.label}')
+
         if self.round_number == self.session.vars["num_rounds"]:
+            logger.info(f'Last round; participant {self.player.participant.code}; session {self.session.code}; round {self.round_number}; participant label {self.player.participant.label}')
             self.player.mark_data_processed()
             try:
                 self.player.vars_dump = json.dumps(self.player.participant.vars)

@@ -100,14 +100,19 @@ class Subsession(BaseSubsession):
         )
         q = session.batches.filter(batch=s.active_batch, processed=False)
         logger.info(
-            f"CURRENT ACTIVE BANCTHS!: {active_batch}; NON PROCESSED SLOTS{q.count()}"
+            f"CURRENT ACTIVE BATCH: {active_batch}; NON PROCESSED SLOTS: {q.count()}"
         )
         if not q.exists():
+
             session.vars["active_batch"] = active_batch + 1
+            logger.info(
+                f"oTree session {session.code}. batch {active_batch} is completed. Moving to batch {active_batch + 1}"
+            )
             Subsession.objects.filter(session=session).update(
                 active_batch=active_batch + 1
             )
             if session.config.get("expand_slots", False):
+                logger.info(f' Trying to expand slots for session {session.code}')
                 self.expand_slots()
 
     def creating_session(self):

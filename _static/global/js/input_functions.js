@@ -31,13 +31,9 @@ function getFields() {
 }
 
 function checkSingleField(field) {
-    const convValue = field.value.trim()
+    const convValue = field.value.trim().replace(/\s+/g, ' ');
     const regex = field.regex;
     console.debug(convValue, regex, regex.test(convValue))
     console.debug('*')
     return regex.test(convValue);
-    //aValues = field.allowedValues;
-    //const inAllowedValues = aValues.length === 0 ? true : aValues.includes(convValue)
-
-    //return (inAllowedValues);
 }
