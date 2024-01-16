@@ -6,21 +6,9 @@
 {% endblock %}
 
 {% block content %}
- <p class="c0"><span class="c1">You have now reached the end of the practice rounds. In the following you will take
-            turns and either play the educator who has to tell the teacher how many marbles the children have found, or
-            the teacher who has to buy sweets for the children. You will play 3 times the educator, then 5 times the
-            teacher, then, again, the educator, etc. In all you have to describe 21 times, and buy sweets 35
-            times.</span></p>
-    <p class="c0"><span class="c1">Remember that the following was promised:</span></p>
-    <p class="c0"><span class="c1">- a piece of chocolate to the children who find all of their 4 marbles</span></p>
-    <p class="c0"><span class="c1">- a piece of hard candy to the children who find between 1 and 3 of their 4
-            marbles</span></p>
-    <p class="c0"><span class="c1">- a gummy bear to the children who find none of their 4 marbles</span></p>
-    <p class="c0"><span class="c1">Only sweets that are need to reward the children should be bought.</span></p>
-    <p class="c0"><span class="c1">&nbsp;</span></p>
-    <p class="c0"><span class="c1">&nbsp;</span></p>
-    <p class="c5"><span class="c6">The experiment starts when you press the 'Next' button!</span></p>
-    <p class="c2"><span class="c3"></span></p>
+ {% autoescape off %}
+{{ session.vars.EndOfIntroText }}
+     {% endautoescape %}
     {% next_button %}
 
 {% endblock %}

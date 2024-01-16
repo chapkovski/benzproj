@@ -167,6 +167,11 @@ class Subsession(BaseSubsession):
             self.session.vars['allowed_regex'] = excel_data.get("settings").get("allowed_regex")
             caseflag=excel_data.get("settings").get("caseflag") in ['True', 'true', '1', 't', 'T']
             self.session.vars['caseflag'] =caseflag
+            self.session.vars['EndOfIntroText'] = excel_data.get("settings").get("EndOfIntroText", "")
+            print('*'*100)
+            print(self.session.vars['EndOfIntroText'])
+            print('*'*100)
+
             assert len(self.session.vars.get("suffixes", [])) == len(
                 self.session.vars.get("allowed_values", [])
             ), "Number of provided fields should coincide with number of allowed values sets."
