@@ -49,7 +49,7 @@
                     </div>
                     <button @click="addItem" style="flex-basis: 75px;" type="button" class="btn btn-success"
                         :disabled="items.length === maxItems">+</button>
-                    <button @click="removeItem(index)" type="button" :disabled="items.length === minItems"
+                    <button @click="removeItem(itemIndex)" type="button" :disabled="items.length === minItems"
                         class="btn btn-danger" style="flex-basis: 75px;">-</button>
 
                 </div>
@@ -108,7 +108,7 @@
             validate() {
                 if (!this.isValid()) {
                     this.error = true;
-                    this.errorMessage = "Error: All 'children' values should be 2. Marbles values should be 4, 2, and 0 (one of each).";
+                    this.errorMessage = "Error";
                 } else {
                     this.error = false;
                     $('#form').submit()
@@ -118,14 +118,13 @@
 
                 let sortedUserAnswer = [...this.flattenValues].sort();
                 let sortedRightAnswer = [...this.correct_answers].sort();
+                sortedUserAnswer = sortedUserAnswer.map(subArray => subArray.map(str => str.replace(/\s+/g, ' ')));
+
                 console.debug(sortedRightAnswer)
                 console.debug(sortedUserAnswer)
 
                 // Then, compare the JSON stringified versions
                 let isCorrect = JSON.stringify(sortedUserAnswer) === JSON.stringify(sortedRightAnswer);
-
-
-
                 return isCorrect
             },
             addItem() {
@@ -138,6 +137,7 @@
                     this.items.push({ fields: fields });
                 }
             },
+
             removeItem(index) {
                 if (this.items.length > 1) {
                     this.items.splice(index, 1);
