@@ -175,6 +175,14 @@ The settings have comments describing what each setting does:
 </table>
 
 
+Additional options in settings worksheet are:
+- **interpreter_input_type**: can be either 'radio', 'dropdown' or 'number'. If radio or dropdown is chosen then don't forget to use the next
+parameter `interpreter_input_choices`.
+- **interpreter_input_choices**: any list separated by semicolon (;). They define decisions for an interpreter.
+- **interpreter_title**: that defines a title of the interpreter table.
+- **caseflag**: for producer that defines a flag whether the input (regex) is case sensitive or not.
+- **EndOfIntroText**: a raw html to update the last page before they start submitting decisions.
+
 A few comments:
 
 
@@ -325,3 +333,28 @@ The parameters to set are:
  "GOOGLE_PRIVATE_KEY": "XXX",
 
  "GOOGLE_PRIVATE_KEY_ID": "XXX",
+
+
+# Connecting heroku to the new github repository
+It is done in following steps via heroku dashboard.
+1. You need to connect your existing GitHub account first here:
+https://dashboard.heroku.com/account/applications
+This is done only once.
+2. Then you create a copy ('fork') of the existing repository to your own account and then connect it to heroku. To do this open the repository link:
+https://github.com/chapkovski/benzproj/
+and click on the ‘Fork’ button in the top right corner. After that you can connect the forked repository to heroku.
+3. Then you need to connect a specific app to a specific repository. 
+This is done in the app settings, in the ‘Deploy’ section. You need to click on ‘Connect to GitHub’ and then choose the repository you want to connect to. After that you can choose the branch to deploy from.
+4. After that you can set automatic deployment from the chosen branch. This is done in the ‘Automatic deploys’ section. You need to click on ‘Enable Automatic Deploys’ and then choose the branch to deploy from. After that the app will be automatically updated each time you push changes to the chosen branch.
+5. IMPORTANT: right now the app is set to be automatically deployed from my (chapkovski) repository. You (AntonABenz) is
+also added there as a collaborator. So if you prefer it that way, you can simply edit the existing repository online (in the web interface).
+All the changes will be automatically deployed to the app. If you want to have your own repository, you need to disconnect the current repository and connect your own.
+
+# Updating demographic questionnaire and last (feedback) page.
+The easiest way to update demographic questionnaire is to edit this structure:
+https://github.com/chapkovski/benzproj/blob/main/_static/global/js/demographics.js
+As you can see it is a simple javascript file that contains a list of questions. You can add or remove questions there. The same is true for the last page (feedback page). It is located here:
+https://github.com/chapkovski/benzproj/blob/main/img_desc/templates/img_desc/Feedback.html
+You can edit it directly in the web interface of the github. After you commit the changes, the app will be automatically updated.
+
+
