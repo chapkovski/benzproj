@@ -44,28 +44,7 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    gender = models.StringField(
-        label="Gender",
-        widget=widgets.RadioSelectHorizontal,
-        choices=["female", "male", "diverse", "I prefer not to say"],
-    )
-    age = models.IntegerField(label="Age (years)")
-    handedness = models.StringField(
-        label="Handedness",
-        widget=widgets.RadioSelectHorizontal,
-        choices=["right-handed", "left-handed", "ambidextrous/two-handed"],
-    )
-    grew_up = CountryField(null=True, verbose_name='Grew up in country')
-    currently_living = CountryField(null=True, verbose_name='Currently living in country')
-    native_language = models.StringField(
-        label='Native language',
-        choices=["English", "other"], widget=widgets.RadioSelectHorizontal
-    )
-    education = models.StringField(
-        label="Completed highest level of education	",
-        choices=EDUCATION_CHOICES,
-        widget=widgets.RadioSelect,
-    )
+    survey_data = models.LongStringField()
 
     def start(self):
         if self.round_number == 1:

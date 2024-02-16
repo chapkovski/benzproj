@@ -1,38 +1,54 @@
 {% load otree static %}
 
 <script>
-    window.interpreter_title = {{ session.vars.interpreter_title | json }}
-    window.interpreter_choices = {{ session.vars.interpreter_choices | json }}
+    window.interpreter_title = {{ session.vars.interpreter_title | json }};
+    window.interpreter_choices = {{ session.vars.interpreter_choices | json }};
+    window.interpreter_input_type = {{ session.vars.interpreter_input_type | json }};
+    window.interpreter_input_choices = {{ session.vars.interpreter_input_choices | json }};
 </script>
+
 <div id="app">
     {% verbatim %}
-  
-
     <form @submit.prevent="checkChoices">
         <input type="hidden" name="interpreter_decision" :value="JSON.stringify(sweets)">
         <input type="hidden" v-model="startTime" name="start_decision_time">
         <input type="hidden" v-model="endTime" name="end_decision_time">
         <input type="hidden" v-model="durationInSeconds" name="decision_seconds">
         <table class="table">
-            <thead>
+            <thead v-if="interpreter_input_type === 'radio'">
                 <tr>
                     <th scope="col">{{interpreter_title}}</th>
-                    <th scope="col">Yes</th>
-                    <th scope="col">No</th>
+                    <th scope="col" v-for="choice in interpreter_input_choices" :key="choice">{{choice}}</th>
+                </tr>
+            </thead>
+            <thead v-else>
+                <tr>
+                    <th scope="col">{{interpreter_title}}</th>
+                    <th scope="col" v-if="interpreter_input_type === 'dropbox'">Choose</th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="(sweet, index) in sweets" :key="index">
                     <td>{{ sweet.name }}</td>
-                    <td><input type="radio" v-model="sweet.choice" :value="true" @change="resetError"></td>
-                    <td><input type="radio" v-model="sweet.choice" :value="false" @change="resetError"></td>
-
+                    <template v-if="interpreter_input_type === 'radio'">
+                        <td v-for="(choice, choiceIndex) in interpreter_input_choices" :key="choiceIndex">
+                            <input type="radio" v-model="sweet.choice" :value="choice" @change="resetError">
+                        </td>
+                    </template>
+                    <td v-if="interpreter_input_type === 'number'">
+                        <input type="number" v-model="sweet.choice" @change="resetError">
+                    </td>
+                    <td v-if="interpreter_input_type === 'dropbox'">
+                        <select v-model="sweet.choice" @change="resetError">
+                            <option disabled value="">Please select one</option>
+                            <option v-for="choice in interpreter_input_choices" :value="choice" :key="choice">{{choice}}</option>
+                        </select>
+                    </td>
                 </tr>
             </tbody>
         </table>
 
         <button :disabled="!allChoicesMade" type="button" @click="checkChoices" class="btn btn-primary">Next</button>
-
 
         <p v-if="error" class="alert alert-danger my-3">Error: please, check your answers!</p>
     </form>
@@ -42,13 +58,15 @@
 <script>
     const app = Vue.createApp({
         data() {
-            const sweets = window.interpreter_choices.map((name, index) => ({ name: name, choice: null }));
+            const sweets = window.interpreter_choices.map(name => ({ name, choice: null }));
 
             return {
-                startTime: new Date().toISOString(),  // ISO string format "2023-07-19T16:14:33.789Z"
+                startTime: new Date().toISOString(),
                 endTime: null,
                 durationInSeconds: null,
                 interpreter_title: window.interpreter_title,
+                interpreter_input_type: window.interpreter_input_type,
+                interpreter_input_choices: window.interpreter_input_choices,
                 sweets: sweets,
                 error: false,
             }
@@ -62,20 +80,16 @@
                 this.durationInSeconds = (new Date(this.endTime) - new Date(this.startTime)) / 1000;
 
                 this.$nextTick(() => {
-                    $('#form').submit()
-                    // After the next DOM update cycle
-                    {# $('#form').submit() #}
+                    $('#form').submit();
                 });
-
-
-
             },
         },
         computed: {
             allChoicesMade() {
+                // Adjust logic if needed to ensure all choices are made
                 return this.sweets.every(sweet => sweet.choice !== null);
             }
         }
-    })
-    app.mount('#app')
+    });
+    app.mount('#app');
 </script>

@@ -107,4 +107,7 @@ class FinalForProlific(Page):
         return redirect(FALLBACK_URL)
 
 
-page_sequence = [FaultyCatcher, Q, Feedback, FinalForProlific]
+page_sequence = [
+    FaultyCatcher, Q,
+    Feedback, FinalForProlific
+]

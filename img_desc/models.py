@@ -179,6 +179,12 @@ class Subsession(BaseSubsession):
             self.session.vars["interpreter_choices"] = excel_data.get("settings").get(
                 "interpreter_choices"
             )
+            self.session.vars['interpreter_input_type'] = excel_data.get("settings").get(
+                "interpreter_input_type"
+            )
+            self.session.vars['interpreter_input_choices'] = excel_data.get("settings").get(
+                "interpreter_input_choices"
+            )
             self.session.vars["interpreter_title"] = excel_data.get("settings").get(
                 "interpreter_title"
             )

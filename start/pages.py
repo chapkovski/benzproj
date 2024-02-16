@@ -4,7 +4,8 @@ from .models import Constants
 import logging
 from img_desc.utils import get_url_for_image
 from pprint import pprint
-
+from json import JSONDecodeError
+import json
 logger = logging.getLogger("benzapp.start_pages")
 
 
@@ -30,16 +31,19 @@ class Consent(Page):
 
 
 class Demographics(Page):
-    form_model = "player"
-    form_fields = [
-        "gender",
-        "age",
-        "handedness",
-        "grew_up",
-        "currently_living",
-        "native_language",
-        "education",
-    ]
+    def post(self):
+        print(self.request.POST)
+        raw_data = self.request.POST.get('survey_data')
+        try:
+            json_data= json.loads(raw_data)
+            print(json_data)
+            self.player.survey_data = json.dumps(json_data)
+        except JSONDecodeError:
+            logger.warning('No  demographic data')
+        except Exception as e:
+            logger.error(f"Error while saving demographic data: {e}")
+        return super().post()
+
 
 
 class Instructions(Page):

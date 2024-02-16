@@ -155,6 +155,8 @@ def get_data(filename):
     settings_dict["interpreter_choices"] = allowed_value_converter(
         settings_dict["interpreter_choices"]
     )
+    settings_dict["interpreter_input_choices"] = allowed_value_converter(   settings_dict["interpreter_input_choices"])
+
     settings_dict["practice_pages"] = {
         key: bool(int(value))
         for key, value in settings_dict.items()
