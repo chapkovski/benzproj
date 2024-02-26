@@ -170,7 +170,7 @@ class DataExport(PandasExport):
             df = expand_lists(df, "inner_sentences", "sentence", level=2)
             prefix = "reward_"
             cols_to_convert = df.filter(regex=f"^{prefix}").columns
-            df[cols_to_convert] = df[cols_to_convert].astype("Int64")
+            # df[cols_to_convert] = df[cols_to_convert].astype("Int64")
             cols_to_drop = ["sentences"]
             df = df.drop(columns=cols_to_drop)
             name_mapping = {
