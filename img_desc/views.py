@@ -98,13 +98,7 @@ class PandasExport(View):
             return redirect(reverse("ExportIndex"))
 
 DEMOGRAPHICS_FIELDS=[
-      "gender",
-        "age",
-        "handedness",
-        "grew_up",
-        "currently_living",
-        "native_language",
-        "education",
+     'survey_data'
 ]
 PREFIX_START="participant__start_player__"
 DEMO_FULL_FULL_FIELDS=[f'{PREFIX_START}{i}' for i in DEMOGRAPHICS_FIELDS]
