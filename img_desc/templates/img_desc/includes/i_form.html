@@ -36,7 +36,7 @@
                         </td>
                     </template>
                     <td v-if="interpreter_input_type === 'number'">
-                        <input type="number" v-model="sweet.choice" @change="resetError">
+                        <input type="number" v-model="sweet.choice" @input="resetError">
                     </td>
                     <td v-if="interpreter_input_type === 'dropbox'">
                         <select v-model="sweet.choice" @change="resetError">
@@ -56,40 +56,62 @@
 </div>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script>
-    const app = Vue.createApp({
-        data() {
-            const sweets = window.interpreter_choices.map(name => ({ name, choice: null }));
+const app = Vue.createApp({
+    data() {
+        const sweets = window.interpreter_choices.map(name => ({ name, choice: null }));
 
-            return {
-                startTime: new Date().toISOString(),
-                endTime: null,
-                durationInSeconds: null,
-                interpreter_title: window.interpreter_title,
-                interpreter_input_type: window.interpreter_input_type,
-                interpreter_input_choices: window.interpreter_input_choices,
-                sweets: sweets,
-                error: false,
+        return {
+            startTime: new Date().toISOString(),
+            endTime: null,
+            durationInSeconds: null,
+            interpreter_title: window.interpreter_title,
+            interpreter_input_type: window.interpreter_input_type,
+            interpreter_input_choices: window.interpreter_input_choices,
+            sweets: sweets,
+            error: false,
+        }
+    },
+    methods: {
+        validateNumberInput(choice) {
+        // Ensure the choice is treated as a string for comparison
+        const choiceAsString = String(choice); // Convert number input to string
+        // Check if the stringified choice is in interpreter_input_choices for 'number' type
+        if (this.interpreter_input_type === 'number') {
+            const isValid = this.interpreter_input_choices.includes(choiceAsString);
+            this.error = !isValid; // Set error to true if not valid
+            return isValid;
+        }
+        return true; // Return true for non-number types
+    },
+        resetError(event) {
+            const choice = event.target.value;
+            if (!this.validateNumberInput(choice)) {
+                this.error = true; // Keep error true if validation fails
+            } else {
+                this.error = false; // Reset error if input is valid
             }
         },
-        methods: {
-            resetError() {
-                this.error = false;
-            },
-            checkChoices() {
-                this.endTime = new Date().toISOString();
-                this.durationInSeconds = (new Date(this.endTime) - new Date(this.startTime)) / 1000;
+        checkChoices() {
+            if (this.error) {
+                // Prevent form submission if there's an error
+                return;
+            }
+            this.endTime = new Date().toISOString();
+            this.durationInSeconds = (new Date(this.endTime) - new Date(this.startTime)) / 1000;
 
+            if (this.allChoicesMade && !this.error) {
                 this.$nextTick(() => {
                     $('#form').submit();
                 });
-            },
-        },
-        computed: {
-            allChoicesMade() {
-                // Adjust logic if needed to ensure all choices are made
-                return this.sweets.every(sweet => sweet.choice !== null);
             }
+        },
+    },
+    computed: {
+        allChoicesMade() {
+            // Ensure all choices are made and there are no errors
+            return this.sweets.every(sweet => sweet.choice !== null && !this.error);
         }
-    });
-    app.mount('#app');
+    }
+});
+app.mount('#app');
 </script>
