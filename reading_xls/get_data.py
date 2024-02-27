@@ -74,6 +74,10 @@ def validate_regex_patterns(regexs):
     valid_regexs = []
     for regex in regexs:
         try:
+            if not regex.startswith('^'):
+                regex = '^' + regex
+            if not regex.endswith('$'):
+                regex = regex + '$'
             re.compile(regex)
             valid_regexs.append(regex)  # Add to the list if the regex is valid
         except re.error:
