@@ -39,7 +39,7 @@ Your app description
 class Constants(BaseConstants):
     name_in_url = "img_desc"
     players_per_group = None
-    num_rounds = 60
+    num_rounds = 85
     STUBURL = STUBURL
     PLACEMENT_ERR = "ERROR_BATCH_PLACEMENT"
     API_ERR = "API_ERROR"
